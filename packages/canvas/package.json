@@ -1,0 +1,47 @@
+{
+  "name": "@monopane/canvas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "项目文档画布的数据契约与领域逻辑：四大区域规范、Schema 校验、内置示例与流程模拟",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "keywords": [
+    "monopane",
+    "canvas",
+    "diagram",
+    "domain",
+    "schema"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boommanpro/monopane.git",
+    "directory": "packages/canvas"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint ./src --cache",
+    "lint:fix": "eslint ./src --fix",
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
+  },
+  "devDependencies": {
+    "@flowgram.ai/eslint-config": "1.0.15",
+    "@types/node": "^22",
+    "eslint": "^9.0.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

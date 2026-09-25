@@ -1,0 +1,30 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 构建产物
+dist/
+dist-viewer/
+packages/*/dist/
+packages/*/dist-viewer/
+packages/app/public/viewer-template.html
+_site/
+*.tsbuildinfo
+
+# 工具缓存
+.eslintcache
+coverage/
+.prettiercache
+
+# 编辑器 / 系统
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# 日志与本地环境
+*.log
+npm-debug.log*
+.env
+.env.local
+.env.*.local

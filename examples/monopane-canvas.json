@@ -1,0 +1,704 @@
+{
+  "schemaVersion": "1.0",
+  "nodes": [
+    {
+      "id": "group-db",
+      "type": "group",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "parentID": "root",
+        "title": "数据库结构与关联",
+        "color": "Blue",
+        "blockIDs": ["note-db-none"]
+      }
+    },
+    {
+      "id": "note-db-none",
+      "type": "note",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "size": { "width": 360, "height": 150 },
+        "note": "本仓库未发现数据库定义：无 SQL 迁移、无 Prisma / TypeORM / SQLAlchemy / JPA / GORM 模型。\n\n画布文档自身以「schemaVersion 1.0 的 JSON」形式持久化在浏览器 localStorage（key: monopane-canvas-doc-v1），属于客户端存储而非关系型数据库。"
+      }
+    },
+
+    {
+      "id": "group-arch",
+      "type": "group",
+      "meta": { "position": { "x": 5600, "y": 0 } },
+      "data": {
+        "parentID": "root",
+        "title": "项目架构",
+        "color": "Violet",
+        "blockIDs": [
+          "arch-entry",
+          "arch-toolbar",
+          "arch-tools",
+          "arch-editor",
+          "arch-props",
+          "arch-nodes",
+          "arch-plugins",
+          "arch-services",
+          "arch-sim",
+          "arch-export",
+          "arch-viewer",
+          "arch-storage",
+          "arch-flowgram",
+          "arch-canvas-pkg"
+        ]
+      }
+    },
+    {
+      "id": "arch-entry",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "title": "应用入口",
+        "category": "frontend",
+        "tech": ["React 18", "createRoot", "Rsbuild"],
+        "description": "挂载编辑器或只读预览两个入口"
+      }
+    },
+    {
+      "id": "arch-toolbar",
+      "type": "arch-component",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": {
+        "title": "顶部工具栏",
+        "category": "frontend",
+        "tech": ["Semi Design"],
+        "description": "标题、模拟运行、导入导出、只读切换"
+      }
+    },
+    {
+      "id": "arch-tools",
+      "type": "arch-component",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": {
+        "title": "底部工具条",
+        "category": "frontend",
+        "tech": ["Semi Design", "Minimap"],
+        "description": "缩放、小地图、撤销重做、添加节点"
+      }
+    },
+    {
+      "id": "arch-editor",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": {
+        "title": "自由画布编辑器",
+        "category": "service",
+        "tech": ["FreeLayoutEditorProvider", "EditorRenderer"],
+        "description": "画布渲染、文档状态、视口与交互"
+      }
+    },
+    {
+      "id": "arch-props",
+      "type": "arch-component",
+      "meta": { "position": { "x": 460, "y": 380 } },
+      "data": {
+        "title": "编辑器配置中心",
+        "category": "service",
+        "tech": ["useEditorProps", "shortcuts", "i18n"],
+        "description": "画布配置、插件装配、连线与拖放规则"
+      }
+    },
+    {
+      "id": "arch-nodes",
+      "type": "arch-component",
+      "meta": { "position": { "x": 920, "y": 380 } },
+      "data": {
+        "title": "自定义节点与表单",
+        "category": "service",
+        "tech": ["FlowNodeRegistry", "form-materials"],
+        "description": "7 类节点的渲染与属性表单"
+      }
+    },
+    {
+      "id": "arch-plugins",
+      "type": "arch-component",
+      "meta": { "position": { "x": 1380, "y": 380 } },
+      "data": {
+        "title": "插件集",
+        "category": "service",
+        "tech": ["group", "container", "lines", "panel-manager"],
+        "description": "分组容器、连线渲染、小地图、侧栏面板"
+      }
+    },
+    {
+      "id": "arch-services",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 760 } },
+      "data": {
+        "title": "自定义服务",
+        "category": "service",
+        "tech": ["inversify", "CustomService", "ValidateService"],
+        "description": "依赖注入绑定与画布内容校验"
+      }
+    },
+    {
+      "id": "arch-sim",
+      "type": "arch-component",
+      "meta": { "position": { "x": 460, "y": 760 } },
+      "data": {
+        "title": "模拟执行器",
+        "category": "service",
+        "tech": ["CanvasSimulationService"],
+        "description": "拓扑遍历 + 节点状态机 + 流动线"
+      }
+    },
+    {
+      "id": "arch-export",
+      "type": "arch-component",
+      "meta": { "position": { "x": 920, "y": 760 } },
+      "data": {
+        "title": "导出管线",
+        "category": "other",
+        "tech": ["PNG", "JSON", "Standalone HTML"],
+        "description": "三类产物导出与文件命名"
+      }
+    },
+    {
+      "id": "arch-viewer",
+      "type": "arch-component",
+      "meta": { "position": { "x": 1380, "y": 760 } },
+      "data": {
+        "title": "只读 viewer 构建",
+        "category": "other",
+        "tech": ["MODE=viewer", "内联脚本与 CSS"],
+        "description": "生成可双击打开的离线单体 HTML 模板"
+      }
+    },
+    {
+      "id": "arch-storage",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 1140 } },
+      "data": {
+        "title": "画布文档存储",
+        "category": "storage",
+        "tech": ["localStorage", "schemaVersion 1.0"],
+        "description": "校验、防抖暂存、损坏时回退内置示例"
+      }
+    },
+    {
+      "id": "arch-flowgram",
+      "type": "arch-component",
+      "meta": { "position": { "x": 460, "y": 1140 } },
+      "data": {
+        "title": "FlowGram 生态依赖",
+        "category": "thirdparty",
+        "tech": ["free-layout-editor 1.0.15"],
+        "description": "底层画布引擎与全套官方插件（11 个）"
+      }
+    },
+    {
+      "id": "arch-canvas-pkg",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 1520 } },
+      "data": {
+        "title": "@monopane/canvas 数据契约包",
+        "category": "service",
+        "tech": ["TypeScript", "零 React 依赖", "vitest"],
+        "description": "区域规范、Schema 校验、内置示例与模拟分支，供编辑器、只读预览与解析 Skill 共用"
+      }
+    },
+
+    {
+      "id": "group-flow",
+      "type": "group",
+      "meta": { "position": { "x": 0, "y": 5600 } },
+      "data": {
+        "parentID": "root",
+        "title": "代码流程",
+        "color": "Green",
+        "blockIDs": [
+          "flow-start-boot",
+          "flow-polyfill",
+          "flow-load-doc",
+          "flow-cache-check",
+          "flow-fallback",
+          "flow-use-cache",
+          "flow-registry",
+          "flow-props",
+          "flow-provider",
+          "flow-fitview",
+          "flow-interact",
+          "flow-autosave",
+          "flow-end-visible"
+        ]
+      }
+    },
+    {
+      "id": "flow-start-boot",
+      "type": "flow-start",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "title": "浏览器打开页面",
+        "description": "index.html 加载 app.tsx 入口脚本"
+      }
+    },
+    {
+      "id": "flow-polyfill",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": {
+        "title": "初始化 React 根",
+        "description": "unstableSetCreateRoot(createRoot) 供 form-materials 使用"
+      }
+    },
+    {
+      "id": "flow-load-doc",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 760 } },
+      "data": {
+        "title": "读取画布文档",
+        "description": "loadCanvasDocument()：localStorage 缓存优先"
+      }
+    },
+    {
+      "id": "flow-cache-check",
+      "type": "flow-decision",
+      "meta": { "position": { "x": 0, "y": 1140 } },
+      "data": {
+        "title": "本地缓存是否合法？",
+        "description": "validateCanvasFile 校验 schemaVersion 与节点类型",
+        "defaultBranch": "yes"
+      }
+    },
+    {
+      "id": "flow-fallback",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 1140 } },
+      "data": {
+        "title": "回退内置示例",
+        "description": "缓存损坏时清空 key 并返回 defaultCanvasData"
+      }
+    },
+    {
+      "id": "flow-use-cache",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 760 } },
+      "data": {
+        "title": "采用缓存文档",
+        "description": "以缓存内容作为 initialData，跳过内置示例"
+      }
+    },
+    {
+      "id": "flow-registry",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 380 } },
+      "data": {
+        "title": "注册自定义节点",
+        "description": "nodeRegistries 注入 7 类节点的渲染与表单"
+      }
+    },
+    {
+      "id": "flow-props",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": {
+        "title": "构建编辑器配置",
+        "description": "useEditorProps：连线规则、快捷键、服务绑定、插件列表"
+      }
+    },
+    {
+      "id": "flow-provider",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": {
+        "title": "挂载编辑器 Provider",
+        "description": "FreeLayoutEditorProvider + EditorRenderer 建立画布实例"
+      }
+    },
+    {
+      "id": "flow-fitview",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 380 } },
+      "data": {
+        "title": "对齐视口",
+        "description": "onAllLayersRendered 回调里执行 fitView(false)"
+      }
+    },
+    {
+      "id": "flow-interact",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 760 } },
+      "data": {
+        "title": "响应用户操作",
+        "description": "拖拽节点、拉线、编辑属性、触发模拟运行"
+      }
+    },
+    {
+      "id": "flow-autosave",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 1140 } },
+      "data": {
+        "title": "防抖自动暂存",
+        "description": "onContentChange 防抖 1s 后写入 localStorage"
+      }
+    },
+    {
+      "id": "flow-end-visible",
+      "type": "flow-end",
+      "meta": { "position": { "x": 920, "y": 1520 } },
+      "data": {
+        "title": "画布可浏览",
+        "description": "四区域节点与连线全部渲染完成"
+      }
+    },
+
+    {
+      "id": "group-runtime",
+      "type": "group",
+      "meta": { "position": { "x": 5600, "y": 5600 } },
+      "data": {
+        "parentID": "root",
+        "title": "项目运行逻辑",
+        "color": "Orange",
+        "blockIDs": [
+          "run-build",
+          "run-inline",
+          "run-load",
+          "run-mount",
+          "run-init",
+          "run-di",
+          "run-render",
+          "run-fit",
+          "run-ready",
+          "run-sim",
+          "run-export",
+          "run-end"
+        ]
+      }
+    },
+    {
+      "id": "run-build",
+      "type": "flow-start",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "title": "执行构建",
+        "description": "pnpm --filter @monopane/app build:all：MODE=app → dist，MODE=viewer → dist-viewer"
+      }
+    },
+    {
+      "id": "run-inline",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": {
+        "title": "内联 viewer 产物",
+        "description": "build-viewer-template.mjs 把初始脚本与异步 chunk、CSS 全部内联"
+      }
+    },
+    {
+      "id": "run-load",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 760 } },
+      "data": {
+        "title": "浏览器加载页面",
+        "description": "按顺序执行内联 chunk，JSONP 运行时回放已入队 chunk"
+      }
+    },
+    {
+      "id": "run-mount",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 1140 } },
+      "data": {
+        "title": "React 挂载根节点",
+        "description": "createRoot(document.getElementById('root')).render(<Editor />)"
+      }
+    },
+    {
+      "id": "run-init",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 1520 } },
+      "data": {
+        "title": "编辑器初始化",
+        "description": "Provider 装载 initialData，建立文档与视口"
+      }
+    },
+    {
+      "id": "run-di",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 1900 } },
+      "data": {
+        "title": "插件 postConstruct",
+        "description": "插件在构造期解析依赖绑定，缺绑定会直接报错"
+      }
+    },
+    {
+      "id": "run-render",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 1520 } },
+      "data": {
+        "title": "渲染节点与连线",
+        "description": "按 nodeRegistries 渲染 7 类节点及三类连线标签"
+      }
+    },
+    {
+      "id": "run-fit",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 1140 } },
+      "data": {
+        "title": "视口对齐",
+        "description": "全部图层渲染完成后 fitView，把四区域收进视野"
+      }
+    },
+    {
+      "id": "run-ready",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 760 } },
+      "data": {
+        "title": "画布进入就绪态",
+        "description": "支持缩放、平移、拖拽、连线、属性编辑"
+      }
+    },
+    {
+      "id": "run-sim",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 380 } },
+      "data": {
+        "title": "模拟运行",
+        "description": "从 flow-start 出发做拓扑遍历，走过的连线变为流动线"
+      }
+    },
+    {
+      "id": "run-export",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": {
+        "title": "导出产物",
+        "description": "按需导出 JSON（可再导入）、PNG 图片、离线 HTML"
+      }
+    },
+    {
+      "id": "run-end",
+      "type": "flow-end",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": {
+        "title": "产出可分享文档",
+        "description": "离线 HTML 双击即可离线浏览与缩放"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "arch-entry",
+      "targetNodeID": "arch-editor",
+      "data": { "kind": "dependency", "label": "渲染编辑器" }
+    },
+    {
+      "sourceNodeID": "arch-entry",
+      "targetNodeID": "arch-viewer",
+      "data": { "kind": "dependency", "label": "渲染只读预览" }
+    },
+    {
+      "sourceNodeID": "arch-editor",
+      "targetNodeID": "arch-props",
+      "data": { "kind": "dependency", "label": "读取配置" }
+    },
+    {
+      "sourceNodeID": "arch-editor",
+      "targetNodeID": "arch-nodes",
+      "data": { "kind": "dependency", "label": "注册节点" }
+    },
+    {
+      "sourceNodeID": "arch-editor",
+      "targetNodeID": "arch-storage",
+      "data": { "kind": "dependency", "label": "加载 / 暂存文档" }
+    },
+    {
+      "sourceNodeID": "arch-props",
+      "targetNodeID": "arch-plugins",
+      "data": { "kind": "dependency", "label": "装配插件" }
+    },
+    {
+      "sourceNodeID": "arch-props",
+      "targetNodeID": "arch-services",
+      "data": { "kind": "dependency", "label": "onBind 注入" }
+    },
+    {
+      "sourceNodeID": "arch-nodes",
+      "targetNodeID": "arch-plugins",
+      "data": { "kind": "dependency", "label": "容器 / 分组渲染" }
+    },
+    {
+      "sourceNodeID": "arch-toolbar",
+      "targetNodeID": "arch-sim",
+      "data": { "kind": "dependency", "label": "启动 / 停止模拟" }
+    },
+    {
+      "sourceNodeID": "arch-toolbar",
+      "targetNodeID": "arch-export",
+      "data": { "kind": "dependency", "label": "触发导出" }
+    },
+    {
+      "sourceNodeID": "arch-tools",
+      "targetNodeID": "arch-plugins",
+      "data": { "kind": "dependency", "label": "小地图 / 面板" }
+    },
+    {
+      "sourceNodeID": "arch-export",
+      "targetNodeID": "arch-storage",
+      "data": { "kind": "dependency", "label": "读取画布文档" }
+    },
+    {
+      "sourceNodeID": "arch-export",
+      "targetNodeID": "arch-viewer",
+      "data": { "kind": "dependency", "label": "套用单体 HTML 模板" }
+    },
+    {
+      "sourceNodeID": "arch-flowgram",
+      "targetNodeID": "arch-editor",
+      "data": { "kind": "dependency", "label": "底层引擎" }
+    },
+    {
+      "sourceNodeID": "arch-flowgram",
+      "targetNodeID": "arch-plugins",
+      "data": { "kind": "dependency", "label": "官方插件包" }
+    },
+    {
+      "sourceNodeID": "arch-plugins",
+      "targetNodeID": "arch-viewer",
+      "data": { "kind": "dependency", "label": "只读模式复用" }
+    },
+    {
+      "sourceNodeID": "arch-nodes",
+      "targetNodeID": "arch-canvas-pkg",
+      "data": { "kind": "dependency", "label": "节点类型与表单字段" }
+    },
+    {
+      "sourceNodeID": "arch-canvas-pkg",
+      "targetNodeID": "arch-storage",
+      "data": { "kind": "dependency", "label": "校验与序列化" }
+    },
+    {
+      "sourceNodeID": "arch-sim",
+      "targetNodeID": "arch-canvas-pkg",
+      "data": { "kind": "dependency", "label": "分支选择逻辑" }
+    },
+
+    {
+      "sourceNodeID": "flow-start-boot",
+      "targetNodeID": "flow-polyfill",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-polyfill",
+      "targetNodeID": "flow-load-doc",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-load-doc",
+      "targetNodeID": "flow-cache-check",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-cache-check",
+      "targetNodeID": "flow-use-cache",
+      "sourcePortID": "yes",
+      "data": { "kind": "flow", "label": "校验通过" }
+    },
+    {
+      "sourceNodeID": "flow-cache-check",
+      "targetNodeID": "flow-fallback",
+      "sourcePortID": "no",
+      "data": { "kind": "flow", "label": "缓存损坏" }
+    },
+    {
+      "sourceNodeID": "flow-use-cache",
+      "targetNodeID": "flow-registry",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-fallback",
+      "targetNodeID": "flow-registry",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-registry",
+      "targetNodeID": "flow-props",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-props",
+      "targetNodeID": "flow-provider",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-provider",
+      "targetNodeID": "flow-fitview",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-fitview",
+      "targetNodeID": "flow-interact",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-interact",
+      "targetNodeID": "flow-autosave",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-autosave",
+      "targetNodeID": "flow-end-visible",
+      "data": { "kind": "flow" }
+    },
+
+    {
+      "sourceNodeID": "run-build",
+      "targetNodeID": "run-inline",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-inline",
+      "targetNodeID": "run-load",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-load",
+      "targetNodeID": "run-mount",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-mount",
+      "targetNodeID": "run-init",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-init",
+      "targetNodeID": "run-di",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-di",
+      "targetNodeID": "run-render",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-render",
+      "targetNodeID": "run-fit",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-fit",
+      "targetNodeID": "run-ready",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-ready",
+      "targetNodeID": "run-sim",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-sim",
+      "targetNodeID": "run-export",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-export",
+      "targetNodeID": "run-end",
+      "data": { "kind": "flow" }
+    }
+  ]
+}

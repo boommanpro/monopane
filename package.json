@@ -1,0 +1,47 @@
+{
+  "name": "monopane",
+  "version": "1.0.0",
+  "private": true,
+  "description": "把任意代码仓库解析成一张四大区域的项目文档画布：数据库结构、项目架构、代码流程、项目运行逻辑",
+  "license": "MIT",
+  "homepage": "https://boommanpro.github.io/monopane/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boommanpro/monopane.git"
+  },
+  "bugs": {
+    "url": "https://github.com/boommanpro/monopane/issues"
+  },
+  "keywords": [
+    "canvas",
+    "diagram",
+    "architecture",
+    "er-diagram",
+    "flowchart",
+    "flowgram",
+    "code-visualization"
+  ],
+  "packageManager": "pnpm@11.24.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @monopane/canvas build && pnpm --filter @monopane/app dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r --if-present lint",
+    "lint:fix": "pnpm -r --if-present lint:fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "pnpm --filter @monopane/canvas test",
+    "test:watch": "pnpm --filter @monopane/canvas test:watch",
+    "clean": "pnpm -r --if-present clean",
+    "changeset": "changeset",
+    "version-packages": "changeset version"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.9",
+    "prettier": "^2.8.8",
+    "rimraf": "^6.0.1"
+  }
+}

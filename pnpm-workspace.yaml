@@ -1,0 +1,10 @@
+packages:
+  - 'packages/*'
+
+# pnpm 默认不执行依赖的安装脚本：esbuild 需要构建以准备平台二进制，
+# core-js 只打印捐赠提示、unrs-resolver 使用预编译 napi 包，显式忽略以免安装报错。
+allowBuilds:
+  esbuild: true
+ignoredBuiltDependencies:
+  - core-js
+  - unrs-resolver

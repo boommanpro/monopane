@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 在线试用 / 在线演示
+    url: https://boommanpro.github.io/monopane/
+    about: 先确认问题在最新部署上是否可复现
+  - name: 数据契约与画布规范
+    url: https://github.com/boommanpro/monopane/blob/main/docs/canvas-schema.md
+    about: 提交「画布内容不对」类问题前，先对照数据契约确认期望行为
+  - name: 安全问题
+    url: https://github.com/boommanpro/monopane/security/advisories/new
+    about: 请通过私密渠道上报，不要开公开 Issue

@@ -1,0 +1,9 @@
+node_modules
+dist
+dist-viewer
+coverage
+pnpm-lock.yaml
+packages/app/public/viewer-template.html
+# 示例画布与 CHANGELOG 由工具生成 / 维护，不参与格式化门禁
+examples
+CHANGELOG.md

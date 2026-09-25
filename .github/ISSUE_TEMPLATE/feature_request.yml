@@ -1,0 +1,56 @@
+name: 功能建议
+description: 提出新功能或改进想法
+title: '[Feature] '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        提交前建议先看一下 README 的 Roadmap 与 CONTRIBUTING 的职责边界，
+        跨端可复用的逻辑应放进 `packages/canvas`，渲染与交互才放进 `packages/app`。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你遇到的问题是
+      description: 描述场景与痛点，而不是直接给方案
+      placeholder: 我在画一个 40+ 张表的仓库时，数据库区域的节点很难一眼看清主外键关系……
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 期望的方案
+      placeholder: 希望在连线标签上直接展示「外键字段 → 主键字段」，并且只显示与选中节点相关的连线。
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 考虑过的替代方案
+      description: 可选。你排除掉的做法，以及原因
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 大致落在哪一层
+      options:
+        - packages/canvas（数据契约 / 校验 / 模拟）
+        - packages/app（编辑器 UI）
+        - 只读预览 / 导出产物
+        - 解析 Skill / 文档
+        - 不确定
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已搜索过现有 Issue 与 Roadmap，确认没有重复
+          required: true
+        - label: 我愿意自己实现并提交 PR
+          required: false

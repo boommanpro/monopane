@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# 只读权限即可；push 到同分支的新提交会自动取消上一轮未完成的检查
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint / Format / Typecheck / Test / Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        # 版本取自根 package.json 的 packageManager 字段
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Verify build outputs
+        run: |
+          node -e "
+            const { existsSync } = require('node:fs');
+            const required = [
+              'packages/app/dist/index.html',
+              'packages/app/dist-viewer/index.html',
+              'packages/app/public/viewer-template.html',
+            ];
+            const missing = required.filter((file) => !existsSync(file));
+            if (missing.length) {
+              console.error('缺少构建产物：' + missing.join(', '));
+              process.exit(1);
+            }
+            console.log('构建产物齐全：' + required.join(', '));
+          "

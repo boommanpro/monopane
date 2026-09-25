@@ -1,0 +1,800 @@
+{
+  "schemaVersion": "1.0",
+  "nodes": [
+    {
+      "id": "group-db",
+      "type": "group",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "parentID": "root",
+        "title": "数据库结构与关联",
+        "color": "Blue",
+        "blockIDs": [
+          "db-article-favorites",
+          "db-article-tags",
+          "db-articles",
+          "db-comments",
+          "db-follows",
+          "db-tags",
+          "db-users",
+          "note-db-source"
+        ]
+      }
+    },
+    {
+      "id": "db-article-favorites",
+      "type": "db-table",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "title": "article_favorites",
+        "comment": "文章收藏（用户 × 文章 联合主键）",
+        "fields": [
+          { "name": "article_id", "type": "varchar(255)", "flags": ["pk", "fk"], "comment": "文章 id" },
+          { "name": "user_id", "type": "varchar(255)", "flags": ["pk", "fk"], "comment": "收藏者 id" }
+        ]
+      }
+    },
+    {
+      "id": "db-article-tags",
+      "type": "db-table",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": {
+        "title": "article_tags",
+        "comment": "文章与标签的关联表（DDL 未声明主键）",
+        "fields": [
+          { "name": "article_id", "type": "varchar(255)", "flags": ["fk"], "comment": "文章 id" },
+          { "name": "tag_id", "type": "varchar(255)", "flags": ["fk"], "comment": "标签 id" }
+        ]
+      }
+    },
+    {
+      "id": "db-articles",
+      "type": "db-table",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": {
+        "title": "articles",
+        "comment": "文章主表",
+        "fields": [
+          { "name": "id", "type": "varchar(255)", "flags": ["pk"], "comment": "主键" },
+          { "name": "user_id", "type": "varchar(255)", "flags": ["fk"], "comment": "作者 id" },
+          { "name": "slug", "type": "varchar(255)", "flags": ["unique"], "comment": "URL 短标识" },
+          { "name": "title", "type": "varchar(255)", "comment": "标题" },
+          { "name": "description", "type": "text", "comment": "摘要" },
+          { "name": "body", "type": "text", "comment": "正文" },
+          { "name": "created_at", "type": "TIMESTAMP", "comment": "创建时间" },
+          { "name": "updated_at", "type": "TIMESTAMP", "comment": "默认 CURRENT_TIMESTAMP" }
+        ]
+      }
+    },
+    {
+      "id": "db-comments",
+      "type": "db-table",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": {
+        "title": "comments",
+        "comment": "文章评论",
+        "fields": [
+          { "name": "id", "type": "varchar(255)", "flags": ["pk"], "comment": "主键" },
+          { "name": "body", "type": "text", "flags": ["nullable"], "comment": "评论内容" },
+          { "name": "article_id", "type": "varchar(255)", "flags": ["fk", "nullable"], "comment": "所属文章" },
+          { "name": "user_id", "type": "varchar(255)", "flags": ["fk", "nullable"], "comment": "评论者" },
+          { "name": "created_at", "type": "TIMESTAMP", "comment": "创建时间" },
+          { "name": "updated_at", "type": "TIMESTAMP", "comment": "默认 CURRENT_TIMESTAMP" }
+        ]
+      }
+    },
+    {
+      "id": "db-follows",
+      "type": "db-table",
+      "meta": { "position": { "x": 460, "y": 380 } },
+      "data": {
+        "title": "follows",
+        "comment": "关注关系（DDL 未声明主键）",
+        "fields": [
+          { "name": "user_id", "type": "varchar(255)", "flags": ["fk"], "comment": "关注发起者" },
+          { "name": "follow_id", "type": "varchar(255)", "flags": ["fk"], "comment": "被关注者" }
+        ]
+      }
+    },
+    {
+      "id": "db-tags",
+      "type": "db-table",
+      "meta": { "position": { "x": 920, "y": 380 } },
+      "data": {
+        "title": "tags",
+        "comment": "标签字典",
+        "fields": [
+          { "name": "id", "type": "varchar(255)", "flags": ["pk"], "comment": "主键" },
+          { "name": "name", "type": "varchar(255)", "comment": "标签名" }
+        ]
+      }
+    },
+    {
+      "id": "db-users",
+      "type": "db-table",
+      "meta": { "position": { "x": 0, "y": 760 } },
+      "data": {
+        "title": "users",
+        "comment": "用户主表，同一个人既写文章也评论、关注",
+        "fields": [
+          { "name": "id", "type": "varchar(255)", "flags": ["pk"], "comment": "主键" },
+          { "name": "username", "type": "varchar(255)", "flags": ["unique"], "comment": "用户名" },
+          { "name": "password", "type": "varchar(255)", "comment": "BCrypt 哈希" },
+          { "name": "email", "type": "varchar(255)", "flags": ["unique"], "comment": "邮箱" },
+          { "name": "bio", "type": "text", "flags": ["nullable"], "comment": "简介" },
+          { "name": "image", "type": "varchar(511)", "flags": ["nullable"], "comment": "头像地址" }
+        ]
+      }
+    },
+    {
+      "id": "note-db-source",
+      "type": "note",
+      "meta": { "position": { "x": 460, "y": 760 } },
+      "data": {
+        "size": { "width": 360, "height": 150 },
+        "note": "表结构来自 Flyway 迁移 src/main/resources/db/migration/V1__create_tables.sql（启动时自动执行）。\n\n运行期数据库为 SQLite（sqlite-jdbc，开发库为单文件 dev.db）。DDL 中未对 follows / article_tags 声明主键。"
+      }
+    },
+
+    {
+      "id": "group-arch",
+      "type": "group",
+      "meta": { "position": { "x": 5600, "y": 0 } },
+      "data": {
+        "parentID": "root",
+        "title": "项目架构",
+        "color": "Violet",
+        "blockIDs": [
+          "arch-client",
+          "arch-security",
+          "arch-api",
+          "arch-graphql",
+          "arch-appservice",
+          "arch-validator",
+          "arch-core",
+          "arch-core-service",
+          "arch-repo",
+          "arch-mybatis",
+          "arch-flyway",
+          "arch-sqlite",
+          "arch-dgs"
+        ]
+      }
+    },
+    {
+      "id": "arch-client",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "title": "客户端",
+        "category": "frontend",
+        "tech": ["REST /api", "GraphQL"],
+        "description": "RealWorld 前端或任意 HTTP 客户端"
+      }
+    },
+    {
+      "id": "arch-security",
+      "type": "arch-component",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": {
+        "title": "安全过滤链",
+        "category": "gateway",
+        "tech": ["Spring Security", "JwtTokenFilter"],
+        "description": "解析 JWT、无状态会话、BCrypt 加密"
+      }
+    },
+    {
+      "id": "arch-api",
+      "type": "arch-component",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": {
+        "title": "REST API 层",
+        "category": "gateway",
+        "tech": ["Spring MVC", "Bean Validation"],
+        "description": "8 个 Controller：文章 / 评论 / 用户 / 标签"
+      }
+    },
+    {
+      "id": "arch-graphql",
+      "type": "arch-component",
+      "meta": { "position": { "x": 1380, "y": 0 } },
+      "data": {
+        "title": "GraphQL 层",
+        "category": "gateway",
+        "tech": ["Netflix DGS", "schema.graphqls"],
+        "description": "与 REST 并行的第二套查询入口"
+      }
+    },
+    {
+      "id": "arch-appservice",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": {
+        "title": "应用服务层",
+        "category": "service",
+        "tech": ["CommandService", "QueryService"],
+        "description": "用例编排：命令侧写、查询侧读"
+      }
+    },
+    {
+      "id": "arch-validator",
+      "type": "arch-component",
+      "meta": { "position": { "x": 460, "y": 380 } },
+      "data": {
+        "title": "业务校验器",
+        "category": "service",
+        "tech": ["DuplicatedArticleValidator"],
+        "description": "标题重复等约束校验"
+      }
+    },
+    {
+      "id": "arch-core",
+      "type": "arch-component",
+      "meta": { "position": { "x": 920, "y": 380 } },
+      "data": {
+        "title": "领域核心层",
+        "category": "service",
+        "tech": ["Article", "User", "Comment"],
+        "description": "充血模型，实体自身承载状态变更"
+      }
+    },
+    {
+      "id": "arch-core-service",
+      "type": "arch-component",
+      "meta": { "position": { "x": 1380, "y": 380 } },
+      "data": {
+        "title": "核心服务",
+        "category": "service",
+        "tech": ["JwtService", "AuthorizationService"],
+        "description": "Token 签发与资源归属判定"
+      }
+    },
+    {
+      "id": "arch-repo",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 760 } },
+      "data": {
+        "title": "仓储实现",
+        "category": "service",
+        "tech": ["MyBatis Repository"],
+        "description": "文章 / 用户 / 评论 / 收藏四个仓储"
+      }
+    },
+    {
+      "id": "arch-mybatis",
+      "type": "arch-component",
+      "meta": { "position": { "x": 460, "y": 760 } },
+      "data": {
+        "title": "MyBatis 映射",
+        "category": "service",
+        "tech": ["mapper/*.xml"],
+        "description": "SQL 与结果映射，读写服务分离"
+      }
+    },
+    {
+      "id": "arch-dgs",
+      "type": "arch-component",
+      "meta": { "position": { "x": 920, "y": 760 } },
+      "data": {
+        "title": "GraphQL DataFetcher",
+        "category": "service",
+        "tech": ["com.netflix.graphql.dgs"],
+        "description": "schema 与查询逻辑的绑定层"
+      }
+    },
+    {
+      "id": "arch-flyway",
+      "type": "arch-component",
+      "meta": { "position": { "x": 1380, "y": 760 } },
+      "data": {
+        "title": "Flyway 迁移",
+        "category": "database",
+        "tech": ["V1__create_tables.sql"],
+        "description": "启动时自动建表，保证环境一致"
+      }
+    },
+    {
+      "id": "arch-sqlite",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 1140 } },
+      "data": {
+        "title": "SQLite 数据库",
+        "category": "database",
+        "tech": ["sqlite-jdbc 3.36"],
+        "description": "单文件存储，开发库为 dev.db"
+      }
+    },
+
+    {
+      "id": "group-flow",
+      "type": "group",
+      "meta": { "position": { "x": 0, "y": 5600 } },
+      "data": {
+        "parentID": "root",
+        "title": "代码流程",
+        "color": "Green",
+        "blockIDs": [
+          "flow-start-create",
+          "flow-jwt-filter",
+          "flow-controller",
+          "flow-dup-check",
+          "flow-throw",
+          "flow-create-entity",
+          "flow-save",
+          "flow-query",
+          "flow-response",
+          "flow-error",
+          "flow-end"
+        ]
+      }
+    },
+    {
+      "id": "flow-start-create",
+      "type": "flow-start",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "title": "客户端 POST /api/articles",
+        "description": "携带 JWT 与 NewArticleParam（title/description/body/tagList）"
+      }
+    },
+    {
+      "id": "flow-jwt-filter",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": {
+        "title": "JwtTokenFilter 解析 Token",
+        "description": "校验签名并构建 Authentication，注入当前用户"
+      }
+    },
+    {
+      "id": "flow-controller",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 760 } },
+      "data": {
+        "title": "ArticlesApi.createArticle",
+        "description": "@Valid 校验请求体后交给命令服务"
+      }
+    },
+    {
+      "id": "flow-dup-check",
+      "type": "flow-decision",
+      "meta": { "position": { "x": 0, "y": 1140 } },
+      "data": {
+        "title": "标题是否重复？",
+        "description": "DuplicatedArticleValidator 按 title 查重",
+        "defaultBranch": "no"
+      }
+    },
+    {
+      "id": "flow-throw",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 1140 } },
+      "data": {
+        "title": "抛出重复文章异常",
+        "description": "触发约束校验失败，进入异常处理"
+      }
+    },
+    {
+      "id": "flow-create-entity",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 760 } },
+      "data": {
+        "title": "构造 Article 实体",
+        "description": "生成 slug 与时间戳，组装 tagList"
+      }
+    },
+    {
+      "id": "flow-save",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 380 } },
+      "data": {
+        "title": "ArticleRepository.save",
+        "description": "经 MyBatis 写入 articles、tags、article_tags"
+      }
+    },
+    {
+      "id": "flow-query",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": {
+        "title": "ArticleQueryService.findById",
+        "description": "读取并组装文章详情（含作者、标签、收藏态）"
+      }
+    },
+    {
+      "id": "flow-response",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": {
+        "title": "返回 200 + article",
+        "description": "按 RealWorld 约定包装响应体"
+      }
+    },
+    {
+      "id": "flow-error",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 1140 } },
+      "data": {
+        "title": "返回 422 校验失败",
+        "description": "异常处理器输出 errors 字段"
+      }
+    },
+    {
+      "id": "flow-end",
+      "type": "flow-end",
+      "meta": { "position": { "x": 920, "y": 380 } },
+      "data": {
+        "title": "请求处理完成",
+        "description": "成功或失败都回到此处，连接交还客户端"
+      }
+    },
+
+    {
+      "id": "group-runtime",
+      "type": "group",
+      "meta": { "position": { "x": 5600, "y": 5600 } },
+      "data": {
+        "parentID": "root",
+        "title": "项目运行逻辑",
+        "color": "Orange",
+        "blockIDs": [
+          "run-start",
+          "run-flyway",
+          "run-mybatis",
+          "run-security",
+          "run-request",
+          "run-auth",
+          "run-401",
+          "run-dispatch",
+          "run-handle",
+          "run-persist",
+          "run-respond",
+          "run-end"
+        ]
+      }
+    },
+    {
+      "id": "run-start",
+      "type": "flow-start",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "title": "启动 Spring Boot",
+        "description": "RealWorldApplication.main 拉起内嵌容器"
+      }
+    },
+    {
+      "id": "run-flyway",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": {
+        "title": "Flyway 执行迁移",
+        "description": "对 SQLite 执行 V1__create_tables.sql，建 7 张表"
+      }
+    },
+    {
+      "id": "run-mybatis",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 760 } },
+      "data": {
+        "title": "MyBatis 初始化",
+        "description": "扫描 mapper/*.xml 与 Mapper 接口，建立映射"
+      }
+    },
+    {
+      "id": "run-security",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 1140 } },
+      "data": {
+        "title": "装配安全链并启动服务",
+        "description": "注册 JwtTokenFilter、BCrypt 与无状态会话，随后对外监听"
+      }
+    },
+    {
+      "id": "run-request",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 1140 } },
+      "data": {
+        "title": "收到 HTTP 请求",
+        "description": "请求先进入过滤器链，再到达 DispatcherServlet"
+      }
+    },
+    {
+      "id": "run-auth",
+      "type": "flow-decision",
+      "meta": { "position": { "x": 460, "y": 760 } },
+      "data": {
+        "title": "Token 是否有效？",
+        "description": "JwtTokenFilter 校验签名与过期时间",
+        "defaultBranch": "yes"
+      }
+    },
+    {
+      "id": "run-401",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 380 } },
+      "data": {
+        "title": "返回 401 未授权",
+        "description": "HttpStatusEntryPoint 直接中断请求"
+      }
+    },
+    {
+      "id": "run-dispatch",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": {
+        "title": "DispatcherServlet 路由",
+        "description": "按路径匹配到对应 Controller 方法"
+      }
+    },
+    {
+      "id": "run-handle",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": {
+        "title": "执行用例",
+        "description": "参数校验 → 命令 / 查询服务 → 仓储"
+      }
+    },
+    {
+      "id": "run-persist",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 380 } },
+      "data": {
+        "title": "MyBatis 读写 SQLite",
+        "description": "写入变更，并在同一链路内查询组装返回数据"
+      }
+    },
+    {
+      "id": "run-respond",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 760 } },
+      "data": {
+        "title": "返回 JSON 响应",
+        "description": "序列化为 RealWorld 约定的响应体"
+      }
+    },
+    {
+      "id": "run-end",
+      "type": "flow-end",
+      "meta": { "position": { "x": 920, "y": 1140 } },
+      "data": {
+        "title": "请求生命周期结束",
+        "description": "连接释放，等待下一次请求"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "db-users",
+      "targetNodeID": "db-articles",
+      "data": { "kind": "db-relation", "relation": "1:N", "label": "users.id → articles.user_id" }
+    },
+    {
+      "sourceNodeID": "db-users",
+      "targetNodeID": "db-comments",
+      "data": { "kind": "db-relation", "relation": "1:N", "label": "users.id → comments.user_id" }
+    },
+    {
+      "sourceNodeID": "db-articles",
+      "targetNodeID": "db-comments",
+      "data": { "kind": "db-relation", "relation": "1:N", "label": "articles.id → comments.article_id" }
+    },
+    {
+      "sourceNodeID": "db-users",
+      "targetNodeID": "db-article-favorites",
+      "data": { "kind": "db-relation", "relation": "1:N", "label": "users.id → article_favorites.user_id" }
+    },
+    {
+      "sourceNodeID": "db-articles",
+      "targetNodeID": "db-article-favorites",
+      "data": { "kind": "db-relation", "relation": "1:N", "label": "articles.id → article_favorites.article_id" }
+    },
+    {
+      "sourceNodeID": "db-articles",
+      "targetNodeID": "db-article-tags",
+      "data": { "kind": "db-relation", "relation": "1:N", "label": "articles.id → article_tags.article_id" }
+    },
+    {
+      "sourceNodeID": "db-tags",
+      "targetNodeID": "db-article-tags",
+      "data": { "kind": "db-relation", "relation": "1:N", "label": "tags.id → article_tags.tag_id" }
+    },
+    {
+      "sourceNodeID": "db-users",
+      "targetNodeID": "db-follows",
+      "data": { "kind": "db-relation", "relation": "1:N", "label": "users.id → follows.user_id（关注发起者）" }
+    },
+
+    {
+      "sourceNodeID": "arch-client",
+      "targetNodeID": "arch-security",
+      "data": { "kind": "dependency", "label": "携带 JWT" }
+    },
+    {
+      "sourceNodeID": "arch-client",
+      "targetNodeID": "arch-graphql",
+      "data": { "kind": "dependency", "label": "GraphQL 查询" }
+    },
+    {
+      "sourceNodeID": "arch-security",
+      "targetNodeID": "arch-api",
+      "data": { "kind": "dependency", "label": "放行已认证请求" }
+    },
+    {
+      "sourceNodeID": "arch-api",
+      "targetNodeID": "arch-appservice",
+      "data": { "kind": "dependency", "label": "调用用例" }
+    },
+    {
+      "sourceNodeID": "arch-graphql",
+      "targetNodeID": "arch-appservice",
+      "data": { "kind": "dependency", "label": "复用同一用例" }
+    },
+    {
+      "sourceNodeID": "arch-appservice",
+      "targetNodeID": "arch-validator",
+      "data": { "kind": "dependency", "label": "业务约束校验" }
+    },
+    {
+      "sourceNodeID": "arch-appservice",
+      "targetNodeID": "arch-core",
+      "data": { "kind": "dependency", "label": "构造 / 变更实体" }
+    },
+    {
+      "sourceNodeID": "arch-core",
+      "targetNodeID": "arch-core-service",
+      "data": { "kind": "dependency", "label": "权限判定" }
+    },
+    {
+      "sourceNodeID": "arch-appservice",
+      "targetNodeID": "arch-repo",
+      "data": { "kind": "dependency", "label": "持久化" }
+    },
+    {
+      "sourceNodeID": "arch-repo",
+      "targetNodeID": "arch-mybatis",
+      "data": { "kind": "dependency", "label": "SQL 映射" }
+    },
+    {
+      "sourceNodeID": "arch-graphql",
+      "targetNodeID": "arch-dgs",
+      "data": { "kind": "dependency", "label": "DataFetcher 绑定" }
+    },
+    {
+      "sourceNodeID": "arch-dgs",
+      "targetNodeID": "arch-appservice",
+      "data": { "kind": "dependency", "label": "查询转发" }
+    },
+    {
+      "sourceNodeID": "arch-mybatis",
+      "targetNodeID": "arch-sqlite",
+      "data": { "kind": "dependency", "label": "JDBC" }
+    },
+    {
+      "sourceNodeID": "arch-flyway",
+      "targetNodeID": "arch-sqlite",
+      "data": { "kind": "dependency", "label": "建表迁移" }
+    },
+
+    {
+      "sourceNodeID": "flow-start-create",
+      "targetNodeID": "flow-jwt-filter",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-jwt-filter",
+      "targetNodeID": "flow-controller",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-controller",
+      "targetNodeID": "flow-dup-check",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-dup-check",
+      "targetNodeID": "flow-create-entity",
+      "sourcePortID": "no",
+      "data": { "kind": "flow", "label": "标题可用" }
+    },
+    {
+      "sourceNodeID": "flow-dup-check",
+      "targetNodeID": "flow-throw",
+      "sourcePortID": "yes",
+      "data": { "kind": "flow", "label": "标题重复" }
+    },
+    {
+      "sourceNodeID": "flow-create-entity",
+      "targetNodeID": "flow-save",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-save",
+      "targetNodeID": "flow-query",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-query",
+      "targetNodeID": "flow-response",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-response",
+      "targetNodeID": "flow-end",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-throw",
+      "targetNodeID": "flow-error",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-error",
+      "targetNodeID": "flow-end",
+      "data": { "kind": "flow", "label": "错误响应" }
+    },
+
+    {
+      "sourceNodeID": "run-start",
+      "targetNodeID": "run-flyway",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-flyway",
+      "targetNodeID": "run-mybatis",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-mybatis",
+      "targetNodeID": "run-security",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-security",
+      "targetNodeID": "run-request",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-request",
+      "targetNodeID": "run-auth",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-auth",
+      "targetNodeID": "run-dispatch",
+      "sourcePortID": "yes",
+      "data": { "kind": "flow", "label": "有效" }
+    },
+    {
+      "sourceNodeID": "run-auth",
+      "targetNodeID": "run-401",
+      "sourcePortID": "no",
+      "data": { "kind": "flow", "label": "无效或缺失" }
+    },
+    {
+      "sourceNodeID": "run-401",
+      "targetNodeID": "run-end",
+      "data": { "kind": "flow", "label": "中断返回" }
+    },
+    {
+      "sourceNodeID": "run-dispatch",
+      "targetNodeID": "run-handle",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-handle",
+      "targetNodeID": "run-persist",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-persist",
+      "targetNodeID": "run-respond",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "run-respond",
+      "targetNodeID": "run-end",
+      "data": { "kind": "flow" }
+    }
+  ]
+}

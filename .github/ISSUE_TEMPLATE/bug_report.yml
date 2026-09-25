@@ -1,0 +1,71 @@
+name: Bug 报告
+description: 报告一个可复现的问题（编辑器、只读预览、导出或 Skill 生成的画布）
+title: '[Bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。为了更快定位问题，请尽量把下面每一项都填完整。
+        如果是「导出的画布内容不对」，请把画布 JSON 附上（注意脱敏）。
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: 影响范围
+      description: 问题出在哪个入口？
+      options:
+        - 编辑器（本地 pnpm dev / 在线根路径）
+        - 只读预览（/viewer/）
+        - 导出（JSON / PNG / 离线 HTML）
+        - 解析 Skill（.trae/skills/project-canvas-gen）
+        - 构建 / CI / 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述
+      description: 实际发生了什么？期望是什么？
+      placeholder: |
+        实际：点击「模拟运行逻辑」后没有任何节点高亮。
+        期望：按 flow 连线顺序逐步高亮。
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. pnpm install && pnpm dev
+        2. 打开 http://localhost:3000
+        3. 点击右上角「播放」图标
+        4. ...
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 版本 / 提交
+      description: 在线站点请给出访问时间；本地请给出 commit sha 或分支名
+      placeholder: main @ 1a2b3c4
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 控制台输出或截图
+      description: 浏览器 Console / Network 报错、构建日志，或直接拖入截图
+      render: shell
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已搜索过现有 Issue，确认没有重复
+          required: true
+        - label: 我已阅读 CONTRIBUTING.md 中的「已知限制」
+          required: true
