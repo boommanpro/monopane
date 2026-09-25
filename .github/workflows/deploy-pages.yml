@@ -29,11 +29,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 首次运行时仓库还没开启 Pages，这里用 GITHUB_TOKEN 自动创建站点并以
-      # 「GitHub Actions」作为发布源；否则 deploy-pages 会报 Get Pages site failed。
-      # 站点已开启时该步骤等同于读取现有配置。
+      # 尝试自动开启 Pages 站点（GITHUB_TOKEN 通常没有创建站点的权限，因此
+      # 不阻塞构建）。仓库首次启用 Pages 需要手动在 Settings → Pages 里把
+      # Source 选为「GitHub Actions」，之后本 workflow 即可全自动部署。
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        continue-on-error: true
         with:
           enablement: true
 
