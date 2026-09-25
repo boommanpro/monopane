@@ -1,10 +1,11 @@
 packages:
   - 'packages/*'
 
-# pnpm 默认不执行依赖的安装脚本：esbuild 需要构建以准备平台二进制，
-# core-js 只打印捐赠提示、unrs-resolver 使用预编译 napi 包，显式忽略以免安装报错。
+# pnpm 默认不执行依赖的安装脚本，且只要存在「未决策」的构建脚本就会以
+# ERR_PNPM_IGNORED_BUILDS 让 install 失败（CI 上会直接卡在安装步骤）。
+# esbuild 需要在安装时准备平台二进制，必须放行；core-js 只打印捐赠提示、
+# unrs-resolver 使用预编译 napi 包，显式标记 false 表示确认无需执行。
 allowBuilds:
   esbuild: true
-ignoredBuiltDependencies:
-  - core-js
-  - unrs-resolver
+  core-js: false
+  unrs-resolver: false

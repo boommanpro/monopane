@@ -28,7 +28,7 @@
   "scripts": {
     "dev": "pnpm --filter @monopane/canvas build && pnpm --filter @monopane/app dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm --filter @monopane/canvas build && pnpm -r typecheck",
     "lint": "pnpm -r --if-present lint",
     "lint:fix": "pnpm -r --if-present lint:fix",
     "format": "prettier --write .",
