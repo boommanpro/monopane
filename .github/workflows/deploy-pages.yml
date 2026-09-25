@@ -41,10 +41,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 用根脚本从 workspace 顶层构建：pnpm 会按依赖顺序先构建 @monopane/canvas，
+      # 再构建 @monopane/app（后者的类型与运行时都从 canvas 的 dist 解析，
+      # 单独 --filter 构建 app 会因缺少 dist 报 "Can't resolve '@monopane/canvas'"）。
       # ASSET_PREFIX 会同时作用于两个入口：
       #   编辑器 -> /monopane/           只读预览 -> /monopane/viewer/
       - name: Build editor and viewer
-        run: pnpm --filter @monopane/app build:all
+        run: pnpm build
 
       # 组装站点目录：
       #   /            <- packages/app/dist        （编辑器）
