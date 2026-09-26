@@ -31,6 +31,7 @@ export const defaultCanvasData: CanvasDocumentJSON = {
           'db-user',
           'db-user-address',
           'db-user-coupon',
+          'db-order-view',
           'note-db',
         ],
       },
@@ -85,6 +86,9 @@ export const defaultCanvasData: CanvasDocumentJSON = {
           'flow-event-publish',
           'flow-response',
           'flow-order-end',
+          'flow-pay-delay',
+          'flow-parallel-post',
+          'flow-subprocess-settle',
           'note-flow',
         ],
       },
@@ -305,6 +309,23 @@ export const defaultCanvasData: CanvasDocumentJSON = {
           { name: 'status', type: 'tinyint', comment: '状态：0 未使用 1 已使用 2 已过期' },
           { name: 'claimed_at', type: 'datetime', comment: '领取时间' },
           { name: 'used_at', type: 'datetime', flags: ['nullable'], comment: '核销时间' },
+        ],
+      },
+    },
+    {
+      id: 'db-order-view',
+      type: 'db-view',
+      meta: { position: { x: 920, y: 1140 } },
+      data: {
+        title: 'v_order_overview',
+        comment: '订单概览视图，供运营报表直接查询',
+        fields: [
+          { name: 'order_id', type: 'bigint', flags: ['pk'], comment: '订单 ID' },
+          { name: 'order_no', type: 'varchar(32)', comment: '订单号' },
+          { name: 'user_id', type: 'bigint', comment: '用户 ID' },
+          { name: 'status', type: 'tinyint', comment: '订单状态' },
+          { name: 'pay_amount', type: 'decimal(10,2)', comment: '实付金额' },
+          { name: 'created_at', type: 'datetime', comment: '下单时间' },
         ],
       },
     },
@@ -593,7 +614,7 @@ export const defaultCanvasData: CanvasDocumentJSON = {
     },
     {
       id: 'flow-event-publish',
-      type: 'flow-step',
+      type: 'flow-notify',
       meta: { position: { x: 0, y: 1520 } },
       data: {
         title: '发送订单创建事件',
@@ -619,14 +640,42 @@ export const defaultCanvasData: CanvasDocumentJSON = {
       },
     },
     {
+      id: 'flow-pay-delay',
+      type: 'flow-delay',
+      meta: { position: { x: 0, y: 1900 } },
+      data: {
+        title: '等待支付结果回调',
+        description: '支付服务异步回调后继续，超时 15 分钟自动关单',
+      },
+    },
+    {
+      id: 'flow-parallel-post',
+      type: 'flow-parallel',
+      meta: { position: { x: 460, y: 1900 } },
+      data: {
+        title: '并行处理后续任务',
+        description: '对账核销、库存回补与消息推送并行执行',
+      },
+    },
+    {
+      id: 'flow-subprocess-settle',
+      type: 'flow-subprocess',
+      meta: { position: { x: 920, y: 1900 } },
+      data: {
+        title: '对账子流程',
+        description: '核对支付流水与订单金额，异常则触发告警',
+      },
+    },
+    {
       id: 'note-flow',
       type: 'note',
-      meta: { position: { x: 0, y: 1900 } },
+      meta: { position: { x: 0, y: 2280 } },
       data: {
         size: { width: 360, height: 220 },
         note:
           '创建订单主流程：入口 → 参数校验 → 幂等判断 → 库存预占 → 优惠核销 → 金额计算 → 落库 → 支付单 → 缓存 → 事件 → 响应。\n' +
           '两个判断节点：幂等 token 命中走「是」分支直接返回，库存不足走「否」分支终止。\n' +
+          '订单创建完成后异步等待支付回调，随后并行执行对账、库存回补等后续任务。\n' +
           '失败路径均需回滚已预占的库存与优惠券。',
       },
     },
@@ -652,11 +701,11 @@ export const defaultCanvasData: CanvasDocumentJSON = {
     },
     {
       id: 'rt-register',
-      type: 'flow-step',
+      type: 'runtime-scheduled',
       meta: { position: { x: 920, y: 0 } },
       data: {
-        title: '注册服务实例',
-        description: '向注册中心上报地址并开启健康检查',
+        title: '注册服务并定时上报心跳',
+        description: '向注册中心上报地址，按 10s 周期发送心跳与指标',
       },
     },
     {
@@ -670,11 +719,11 @@ export const defaultCanvasData: CanvasDocumentJSON = {
     },
     {
       id: 'rt-req-in',
-      type: 'flow-step',
+      type: 'runtime-event',
       meta: { position: { x: 460, y: 380 } },
       data: {
-        title: '接收 HTTP 请求',
-        description: '网关转发请求进入本服务实例',
+        title: '监听 HTTP 请求事件',
+        description: '网关转发请求，容器触发请求到达事件进入处理链',
       },
     },
     {
@@ -980,6 +1029,21 @@ export const defaultCanvasData: CanvasDocumentJSON = {
       sourceNodeID: 'flow-response',
       targetNodeID: 'flow-order-end',
       data: { kind: 'flow' },
+    },
+    {
+      sourceNodeID: 'flow-order-end',
+      targetNodeID: 'flow-pay-delay',
+      data: { kind: 'flow', label: '异步等待支付回调' },
+    },
+    {
+      sourceNodeID: 'flow-pay-delay',
+      targetNodeID: 'flow-parallel-post',
+      data: { kind: 'flow', label: '支付成功后并行处理' },
+    },
+    {
+      sourceNodeID: 'flow-parallel-post',
+      targetNodeID: 'flow-subprocess-settle',
+      data: { kind: 'flow', label: '对账子流程' },
     },
 
     // ======================= 运行逻辑（flow，启动 + 请求生命周期） =======================

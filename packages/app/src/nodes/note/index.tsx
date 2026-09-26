@@ -12,6 +12,7 @@ export const NoteNodeRegistry: FlowNodeRegistry = {
   type: CanvasNodeType.Note,
   info: {
     icon: NOTE_ICON,
+    accent: '#8a94a6',
     label: '便签',
     description: '自由文字说明，可拖拽缩放，不参与连线',
   },

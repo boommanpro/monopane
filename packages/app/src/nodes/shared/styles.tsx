@@ -110,6 +110,20 @@ export const CategoryBadge = styled.span<{ $color: string }>`
   background-color: ${(props) => `${props.$color}1f`};
 `;
 
+/** 节点类型徽标（如「并行网关」「延时等待」），配色跟随节点强调色 */
+export const TypeBadge = styled.span<{ $color: string }>`
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: ${(props) => props.$color};
+  background-color: ${(props) => `${props.$color}1f`};
+`;
+
 export const SimBanner = styled.div<{ $status: SimNodeStatus }>`
   display: ${(props) => (props.$status === 'idle' ? 'none' : 'flex')};
   align-items: center;

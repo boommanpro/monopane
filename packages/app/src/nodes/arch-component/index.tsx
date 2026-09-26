@@ -82,6 +82,7 @@ export const ArchComponentNodeRegistry: FlowNodeRegistry = {
   type: CanvasNodeType.ArchComponent,
   info: {
     icon: ARCH_COMPONENT_ICON,
+    accent: '#7c5cff',
     label: '架构组件',
     description: '架构组件：类别 + 技术标签 + 说明，用于表达项目分层与技术栈',
   },

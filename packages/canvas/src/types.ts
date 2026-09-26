@@ -13,6 +13,8 @@ export const CANVAS_SCHEMA_VERSION = '1.0';
 export enum CanvasNodeType {
   /** 数据库表 */
   DbTable = 'db-table',
+  /** 数据库视图 */
+  DbView = 'db-view',
   /** 架构组件 */
   ArchComponent = 'arch-component',
   /** 流程起点 */
@@ -23,6 +25,18 @@ export enum CanvasNodeType {
   FlowStep = 'flow-step',
   /** 流程判断分支 */
   FlowDecision = 'flow-decision',
+  /** 子流程（内聚逻辑封装） */
+  FlowSubprocess = 'flow-subprocess',
+  /** 并行网关（多分支并行） */
+  FlowParallel = 'flow-parallel',
+  /** 延时等待（外部回调 / 定时触发） */
+  FlowDelay = 'flow-delay',
+  /** 通知 / 领域事件 */
+  FlowNotify = 'flow-notify',
+  /** 运行期事件监听 */
+  RuntimeEvent = 'runtime-event',
+  /** 运行期定时任务 */
+  RuntimeScheduled = 'runtime-scheduled',
   /** 便签注释 */
   Note = 'note',
   /** 区域容器 */
@@ -52,6 +66,16 @@ export interface DbTableNodeData {
   comment?: string;
   /** 字段列表 */
   fields: DbFieldJSON[];
+}
+
+/** 数据库视图（字段同表，用于表达只读投影 / 报表维度） */
+export interface DbViewNodeData {
+  /** 视图名 */
+  title: string;
+  /** 视图说明 */
+  comment?: string;
+  /** 视图字段列表 */
+  fields?: DbFieldJSON[];
 }
 
 /**

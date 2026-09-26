@@ -20,9 +20,9 @@ import { FlowNodeRegistry } from '../../typings';
 import { DbFieldsEditor, TextField } from '../../form-components/field-inputs';
 import { DB_TABLE_ICON } from '../../assets/node-icons';
 
-const DbTableCard = () => (
-  <CardSection>
-    <SimStatusBanner />
+/** 字段列表渲染（表节点与视图节点共用） */
+export function DbFieldRows(): JSX.Element {
+  return (
     <Field<DbFieldJSON[] | undefined> name="fields">
       {({ field }) => {
         const fields = field.value ?? [];
@@ -47,6 +47,13 @@ const DbTableCard = () => (
         );
       }}
     </Field>
+  );
+}
+
+const DbTableCard = () => (
+  <CardSection>
+    <SimStatusBanner />
+    <DbFieldRows />
     <Field<string | undefined> name="comment">
       {({ field }) => (field.value ? <Muted>{field.value}</Muted> : <></>)}
     </Field>
@@ -65,6 +72,7 @@ export const DbTableNodeRegistry: FlowNodeRegistry = {
   type: CanvasNodeType.DbTable,
   info: {
     icon: DB_TABLE_ICON,
+    accent: '#4d53e8',
     label: '数据库表',
     description: '数据库表：表名 + 字段列表（主键 / 外键 / 唯一 / 可空），左右端口用于表达表关联',
   },

@@ -78,6 +78,8 @@ export interface FlowNodeRegistry extends FlowNodeRegistryDefault {
     /** 节点面板中展示的中文名 */
     label?: string;
     description?: string;
+    /** 节点主题强调色（卡片头部着色 / 徽标配色） */
+    accent?: string;
   };
   canAdd?: (ctx: FreeLayoutPluginContext) => boolean;
   canDelete?: (ctx: FreeLayoutPluginContext, from: FlowNodeEntity) => boolean;

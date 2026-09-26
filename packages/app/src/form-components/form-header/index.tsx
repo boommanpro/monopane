@@ -10,6 +10,7 @@ import { Button } from '@douyinfe/semi-ui';
 import { IconClose, IconSmallTriangleDown, IconSmallTriangleLeft } from '@douyinfe/semi-icons';
 
 import { toggleLoopExpanded } from '../../utils';
+import { FlowNodeRegistry } from '../../typings';
 import { FlowCommandId } from '../../shortcuts';
 import { useNodeFormPanel } from '../../plugins/panel-manager-plugin/hooks';
 import { useIsSidebar, useNodeRenderContext } from '../../hooks';
@@ -23,6 +24,7 @@ export function FormHeader() {
   const [titleEdit, updateTitleEdit] = useState<boolean>(false);
   const ctx = useClientContext();
   const isSidebar = useIsSidebar();
+  const accent = node.getNodeRegistry<FlowNodeRegistry>().info?.accent;
   const handleExpand = (e: React.MouseEvent) => {
     toggleExpand();
     e.stopPropagation(); // Disable clicking prevents the sidebar from opening
@@ -42,8 +44,8 @@ export function FormHeader() {
   }, [expanded]);
 
   return (
-    <Header>
-      {getIcon(node)}
+    <Header $accent={accent}>
+      {getIcon(node, accent)}
       <TitleInput readonly={readonly} updateTitleEdit={updateTitleEdit} titleEdit={titleEdit} />
       {node.renderData.expandable && !isSidebar && (
         <Button

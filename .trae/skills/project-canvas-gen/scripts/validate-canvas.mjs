@@ -11,11 +11,18 @@ import { resolve } from 'node:path';
 
 const TYPES = new Set([
   'db-table',
+  'db-view',
   'arch-component',
   'flow-start',
   'flow-end',
   'flow-step',
   'flow-decision',
+  'flow-subprocess',
+  'flow-parallel',
+  'flow-delay',
+  'flow-notify',
+  'runtime-event',
+  'runtime-scheduled',
   'note',
   'group',
 ]);

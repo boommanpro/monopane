@@ -190,7 +190,50 @@ y = row * 380
 - `flow-decision`：判断节点。端口：左侧 `input`，右侧两个输出端口 `yes` / `no`（连线需通过 `sourcePortID` 指定）。
 - `defaultBranch`：必填，取值 `yes` / `no`，用于浏览器内模拟执行时选择分支。
 
-### 3.4 `note` 便签
+> 派生流程节点（与 `flow-step` 共用 `data.title` + `data.description`，端口左右各一，按 `flow` 连线）：
+>
+> - `flow-subprocess`：子流程，把一段内聚逻辑封装起来。
+> - `flow-parallel`：并行网关，模拟执行时全部出边都会走到。
+> - `flow-delay`：延时等待，等待外部回调 / 定时触发。
+> - `flow-notify`：通知 / 领域事件发送。
+
+### 3.4 `db-view` 数据库视图
+
+```json
+{
+  "id": "db-order-view",
+  "type": "db-view",
+  "meta": { "position": { "x": 920, "y": 1140 } },
+  "data": {
+    "title": "v_order_overview",
+    "comment": "订单概览视图",
+    "fields": [{ "name": "order_id", "type": "bigint", "flags": ["pk"] }]
+  }
+}
+```
+
+- `title`：必填，视图名（建议 `v_` 前缀）。
+- `comment`：可选，视图说明。
+- `fields`：可选，字段数组，结构与 `db-table.fields` 完全一致。
+- 端口：左侧 `input`、右侧 `output`。
+
+### 3.5 `runtime-event` / `runtime-scheduled` 运行期节点
+
+与流程节点共用 `data.title` + `data.description`，端口左右各一，按 `flow` 连线：
+
+```json
+{
+  "id": "rt-req-in",
+  "type": "runtime-event",
+  "meta": { "position": { "x": 460, "y": 380 } },
+  "data": { "title": "监听 HTTP 请求事件", "description": "容器触发请求到达事件" }
+}
+```
+
+- `runtime-event`：运行期事件监听（如 HTTP / 领域事件接入点）。
+- `runtime-scheduled`：运行期定时任务（心跳、指标上报、定时对账等）。
+
+### 3.6 `note` 便签
 
 ```json
 {
@@ -208,7 +251,7 @@ y = row * 380
 - `size`：可选，默认 `240 × 150`。
 - 无端口，不参与连线。
 
-### 3.5 `group` 区域容器
+### 3.7 `group` 区域容器
 
 见 2.1。仅用于四大区域，容器不可嵌套，子节点通过 `blockIDs` 声明。
 
@@ -241,7 +284,7 @@ y = row * 380
 2. 每个区域容器存在且 `meta.position` 等于 2.1 表格中的原点。
 3. 所有子节点 id 出现在其所属容器的 `data.blockIDs` 中，且不出现在其他容器的 `blockIDs` 中。
 4. 子节点坐标满足 `x % 460 === 0 && y % 380 === 0`。
-5. 节点 `type` 属于第 3 节的 7 类之一。
+5. 节点 `type` 属于第 3 节列出的节点类型之一。
 6. 每个节点 `data` 的必填字段齐全（`db-table.fields`、`arch-component.category`、`flow-decision.defaultBranch` 等）。
 7. `flow-decision` 的出边都带 `sourcePortID`。
 8. 无自环、无跨区域连线。
@@ -250,3 +293,4 @@ y = row * 380
 ## 6. 版本演进
 
 - `1.0`：初始版本，四大区域 + 7 类节点 + 3 类连线。（2026-09-25）
+- `1.1`：扩展节点类型：`db-view`、`flow-subprocess` / `flow-parallel` / `flow-delay` / `flow-notify`、`runtime-event` / `runtime-scheduled`。（2026-09-26）
