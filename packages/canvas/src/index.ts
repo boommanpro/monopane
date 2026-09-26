@@ -7,6 +7,7 @@
  * - Schema 校验与序列化（validate）
  * - 内置示例画布（default-canvas）
  * - 流程模拟的遍历规则（simulation）
+ * - 分区视图的切片与合并（area-view）
  *
  * 契约文档见 docs/canvas-schema.md。
  */
@@ -16,4 +17,5 @@ export * from './document';
 export * from './constants';
 export * from './validate';
 export * from './simulation';
+export * from './area-view';
 export { defaultCanvasData } from './default-canvas';

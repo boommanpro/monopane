@@ -15,10 +15,10 @@ import { EditorRenderer, FreeLayoutEditorProvider } from '@flowgram.ai/free-layo
 import '@flowgram.ai/free-layout-editor/index.css';
 import './styles/index.css';
 import type { FlowDocumentJSON } from './typings';
-import { ViewerTools } from './toolbar/viewer-tools';
 import { nodeRegistries } from './nodes';
 import { useEditorProps } from './hooks';
 import { getDefaultCanvasDocument } from './data/storage';
+import { AreaTabs, areaViewStore, resolveAreaIdFromPath, useAreaView } from './area-view';
 
 function resolveInitialData(): FlowDocumentJSON {
   const injected = window.__CANVAS_DATA__;
@@ -32,17 +32,21 @@ function resolveInitialData(): FlowDocumentJSON {
   return getDefaultCanvasDocument();
 }
 
+/** 首次加载：初始化分区视图状态（模块加载时执行一次，避免渲染期副作用） */
+areaViewStore.resetWith(resolveInitialData(), resolveAreaIdFromPath() ?? undefined);
+
 export const Viewer = () => {
-  const initialData = useMemo(() => resolveInitialData(), []);
-  const layerChildren = useMemo(() => <ViewerTools />, []);
-  const editorProps = useEditorProps(initialData, nodeRegistries, {
+  // 与编辑器一致的分区视图逻辑：只读模式下同样按内容类型分页展示
+  const { viewVersion } = useAreaView();
+  const viewData = useMemo(() => areaViewStore.getViewDocument(), [viewVersion]);
+  const editorProps = useEditorProps(viewData, nodeRegistries, {
     readonly: true,
-    layerChildren,
   });
 
   return (
-    <FreeLayoutEditorProvider {...editorProps}>
+    <FreeLayoutEditorProvider key={`canvas-${viewVersion}`} {...editorProps}>
       <div className="demo-container">
+        <AreaTabs />
         <DockedPanelLayer>
           <EditorRenderer className="demo-editor" />
         </DockedPanelLayer>

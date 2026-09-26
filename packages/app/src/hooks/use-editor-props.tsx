@@ -33,6 +33,7 @@ import {
   LineLabel,
   NodePanel,
 } from '../components';
+import { areaViewStore } from '../area-view';
 
 const LineInsideRender = (props: LineRenderProps) => (
   <>
@@ -153,11 +154,14 @@ export function useEditorProps(
         enableChangeNode: true,
       },
       /**
-       * 内容变化：防抖自动暂存到 localStorage
+       * 内容变化：先合并当前视图回完整文档，再防抖自动暂存。
+       * 只认当前挂载画布的事件，避免切换 tab 后旧画布的延迟回调污染完整文档。
        */
       onContentChange: debounce((ctx) => {
         if (ctx.document.disposed) return;
-        saveCanvasDocument(ctx.document.toJSON() as FlowDocumentJSON);
+        if (!areaViewStore.isCurrentDocument(ctx.document)) return;
+        const full = areaViewStore.mergeCurrentView(ctx.document.toJSON() as FlowDocumentJSON);
+        saveCanvasDocument(full);
       }, 1000),
       /**
        * 流动线：由模拟执行器决定
@@ -169,9 +173,10 @@ export function useEditorProps(
         bind(ValidateService).toSelf().inSingletonScope();
       },
       /**
-       * 首次渲染完成后对齐视口
+       * 首次渲染完成后：登记当前画布 document（供暂存归属校验），并对齐视口
        */
       onAllLayersRendered(ctx) {
+        areaViewStore.attachDocument(ctx.document);
         ctx.tools.fitView(false);
       },
       i18n: {
