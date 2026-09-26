@@ -98,6 +98,40 @@ export const NOTE_ICON = svgIcon(
   '<path fill="#8a94a6" d="M5.5 2.8h13a1 1 0 0 1 1 1v16.4a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1V3.8a1 1 0 0 1 1-1z"/><path fill="#fff" d="M8 6.8v1.6h8V6.8H8zm0 3.6v1.6h8V10.4H8zm0 3.6v1.6h5V14H8z"/>'
 );
 
+/** 时序图·参与者：圆角框内的人物剪影 */
+export const SEQ_PARTICIPANT_ICON = svgIcon(
+  '<path fill="#0891b2" d="M5 3.5h14A1.5 1.5 0 0 1 20.5 5v14A1.5 1.5 0 0 1 19 20.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5z"/>' +
+    '<circle cx="12" cy="9" r="2.7" fill="#fff"/>' +
+    '<path fill="#fff" d="M7.4 16.9a4.6 4.6 0 0 1 9.2 0z"/>'
+);
+
+/** 时序图·消息：气泡 + 内容行 */
+export const SEQ_MESSAGE_ICON = svgIcon(
+  '<path fill="#06b6d4" d="M3.5 5.5A1.5 1.5 0 0 1 5 4h14a1.5 1.5 0 0 1 1.5 1.5v10A1.5 1.5 0 0 1 19 17h-6.2L9 20.4V17H5A1.5 1.5 0 0 1 3.5 15.5v-10z"/>' +
+    '<path fill="#fff" d="M7 8.4h10v1.6H7zm0 3h7v1.6H7z"/>'
+);
+
+/** 数据流图·数据源：数据桶 + 向外箭头 */
+export const DF_SOURCE_ICON = svgIcon(
+  '<path fill="#6366f1" d="M12 3C7.6 3 4 4.3 4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6c0-1.7-3.6-3-8-3z"/>' +
+    '<path fill="none" stroke="#fff" stroke-width="1.3" d="M4.2 6.1c0 1.7 3.5 3 7.8 3s7.8-1.3 7.8-3"/>' +
+    '<g stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none">' +
+    '<path d="M12 12.2v3.4M10.2 13.6 12 15.4l1.8-1.8"/>' +
+    '</g>'
+);
+
+/** 数据流图·转换：漏斗 */
+export const DF_TRANSFORM_ICON = svgIcon(
+  '<path fill="#818cf8" d="M4 4.2h16l-6.3 7v7l-3.4-1.7v-5.3L4 4.2z"/>' +
+    '<path fill="#fff" d="M8 7h8l-3 3.5v2.2l-1.5-.8V10.5L8 7z" opacity=".85"/>'
+);
+
+/** 数据流图·存储：仓储柜 + 数据行 */
+export const DF_STORE_ICON = svgIcon(
+  '<path fill="#4f46e5" d="M3 4.5h18v4.2H3zM5.4 10.3h13.2v9.6H5.4z"/>' +
+    '<path fill="#fff" d="M7 12.4h10v1.6H7zm0 3h7v1.6H7z"/>'
+);
+
 /** 区域容器（工具栏用图，非节点图标） */
 export const AREA_ICON = svgIcon(
   '<path fill="#8a94a6" d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>'

@@ -8,10 +8,10 @@ import { IconInfoCircle } from '@douyinfe/semi-icons';
 
 export const NodeWrapperStyle = styled.div`
   align-items: flex-start;
-  background-color: #fff;
-  border: 1px solid rgba(6, 7, 9, 0.15);
+  background-color: var(--mp-card-bg);
+  border: 1px solid var(--mp-card-border);
   border-radius: 8px;
-  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.04), 0 4px 12px 0 rgba(0, 0, 0, 0.02);
+  box-shadow: var(--mp-card-shadow);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -20,7 +20,7 @@ export const NodeWrapperStyle = styled.div`
   height: auto;
 
   &.selected {
-    border: 1px solid #4e40e5;
+    border: 1px solid var(--mp-card-selected-border);
   }
 `;
 
@@ -32,7 +32,7 @@ export const ErrorIcon = () => (
       left: -6,
       top: -6,
       zIndex: 1,
-      background: 'white',
+      background: 'var(--mp-card-bg)',
       borderRadius: 8,
     }}
   />

@@ -17,8 +17,8 @@ export const Header = styled.div<{ $accent?: string }>`
 
   background: ${({ $accent }) =>
     $accent
-      ? `linear-gradient(color-mix(in srgb, ${$accent} 9%, #ffffff), color-mix(in srgb, ${$accent} 2%, #fafafa))`
-      : 'linear-gradient(#f2f2ff 0%, rgb(251, 251, 251) 100%)'};
+      ? `linear-gradient(color-mix(in srgb, ${$accent} 9%, var(--mp-card-bg)), color-mix(in srgb, ${$accent} 2%, var(--mp-field-bg)))`
+      : 'linear-gradient(var(--mp-card-bg) 0%, var(--mp-field-bg) 100%)'};
   overflow: hidden;
 
   padding: 8px;
@@ -37,7 +37,7 @@ export const Icon = styled.img<{ $accent?: string }>`
   border-radius: 4px;
   ${({ $accent }) =>
     $accent &&
-    `background-color: color-mix(in srgb, ${$accent} 12%, #ffffff);
+    `background-color: color-mix(in srgb, ${$accent} 12%, var(--mp-card-bg));
      padding: 2px;
      box-sizing: border-box;`}
 `;

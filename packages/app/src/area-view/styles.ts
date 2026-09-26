@@ -18,10 +18,10 @@ export const AreaTabsBar = styled.div`
   gap: 2px;
   height: 38px;
   padding: 0 4px;
-  background-color: #fff;
-  border: 1px solid rgba(68, 83, 130, 0.25);
+  background-color: var(--mp-toolbar-bg);
+  border: 1px solid var(--mp-toolbar-border);
   border-radius: 10px;
-  box-shadow: rgba(0, 0, 0, 0.04) 0px 2px 6px 0px, rgba(0, 0, 0, 0.02) 0px 4px 12px 0px;
+  box-shadow: var(--mp-card-shadow);
   pointer-events: auto;
 `;
 
@@ -33,8 +33,14 @@ export const AreaTabButton = styled.button<{ $active: boolean }>`
   padding: 0 12px;
   border: none;
   border-radius: 7px;
-  background: ${(props) => (props.$active ? 'rgba(77, 83, 232, 0.08)' : 'transparent')};
-  color: ${(props) => (props.$active ? '#1c1f23' : 'rgba(28, 31, 35, 0.65)')};
+  background: ${(props) =>
+    props.$active
+      ? 'color-mix(in srgb, var(--g-workflow-line-color-default) 10%, transparent)'
+      : 'transparent'};
+  color: ${(props) =>
+    props.$active
+      ? 'var(--mp-card-title)'
+      : 'color-mix(in srgb, var(--mp-card-title) 65%, transparent)'};
   font-size: 13px;
   font-weight: ${(props) => (props.$active ? 600 : 400)};
   line-height: 1;
@@ -43,7 +49,7 @@ export const AreaTabButton = styled.button<{ $active: boolean }>`
   transition: background-color 0.15s ease;
 
   &:hover {
-    background-color: rgba(28, 31, 35, 0.05);
+    background-color: color-mix(in srgb, var(--mp-card-title) 5%, transparent);
   }
 `;
 

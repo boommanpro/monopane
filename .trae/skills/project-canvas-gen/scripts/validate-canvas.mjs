@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 画布产物自检脚本 —— 校验 Canvas Schema v1.0（见 docs/canvas-schema.md 第 5 节）
+ * 画布产物自检脚本 —— 校验 Canvas Schema v1.1（见 docs/canvas-schema.md 第 5 节）
  *
  * 用法：node scripts/validate-canvas.mjs <canvas.json>
  * 退出码：0 = 通过（可能有警告），1 = 存在错误
@@ -23,6 +23,11 @@ const TYPES = new Set([
   'flow-notify',
   'runtime-event',
   'runtime-scheduled',
+  'seq-participant',
+  'seq-message',
+  'df-source',
+  'df-transform',
+  'df-store',
   'note',
   'group',
 ]);
@@ -74,8 +79,8 @@ try {
 }
 
 // 1. 顶层结构
-if (doc.schemaVersion !== '1.0') {
-  err(`schemaVersion 应为 "1.0"，实际为 ${JSON.stringify(doc.schemaVersion)}`);
+if (doc.schemaVersion !== '1.1') {
+  err(`schemaVersion 应为 "1.1"，实际为 ${JSON.stringify(doc.schemaVersion)}`);
 }
 if (!Array.isArray(doc.nodes) || !Array.isArray(doc.edges)) {
   err('nodes / edges 必须都是数组');
@@ -218,6 +223,20 @@ doc.nodes.forEach((node) => {
       if (data.defaultBranch !== 'yes' && data.defaultBranch !== 'no') {
         err(`判断节点 ${id} 的 defaultBranch 必须是 "yes" 或 "no"`);
       }
+      break;
+    }
+    case 'seq-participant': {
+      if (!data.title) err(`参与者节点 ${id} 缺少 data.title`);
+      break;
+    }
+    case 'seq-message': {
+      if (!data.title) err(`消息节点 ${id} 缺少 data.title`);
+      break;
+    }
+    case 'df-source':
+    case 'df-transform':
+    case 'df-store': {
+      if (!data.title) err(`数据流节点 ${id} 缺少 data.title`);
       break;
     }
     case 'note': {

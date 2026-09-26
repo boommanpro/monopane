@@ -11,18 +11,24 @@ import { createFreeStackPlugin } from '@flowgram.ai/free-stack-plugin';
 import { createFreeSnapPlugin } from '@flowgram.ai/free-snap-plugin';
 import { createFreeNodePanelPlugin } from '@flowgram.ai/free-node-panel-plugin';
 import { createFreeLinesPlugin, LineRenderProps } from '@flowgram.ai/free-lines-plugin';
-import { FreeLayoutProps, WorkflowNodeEntity } from '@flowgram.ai/free-layout-editor';
+import {
+  FreeLayoutProps,
+  WorkflowNodeEntity,
+  WorkflowSelectService,
+} from '@flowgram.ai/free-layout-editor';
 import { createFreeGroupPlugin } from '@flowgram.ai/free-group-plugin';
 import { createContainerNodePlugin } from '@flowgram.ai/free-container-plugin';
 import { createDownloadPlugin } from '@flowgram.ai/export-plugin';
 
 import { canContainNode, onDragLineEnd } from '../utils';
 import { FlowNodeRegistry, FlowDocumentJSON } from '../typings';
+import { useTheme } from '../theme';
 import { simulationService } from '../simulation';
 import { shortcuts } from '../shortcuts';
 import { CustomService, ValidateService } from '../services';
 import { createContextMenuPlugin, createPanelManagerPlugin } from '../plugins';
 import { timestampedFilename } from '../export/download';
+import { exploreService, findNodeById } from '../explore/service';
 import { saveCanvasDocument } from '../data/storage';
 import { SelectorBoxPopover } from '../components/selector-box-popover';
 import {
@@ -55,6 +61,8 @@ export function useEditorProps(
   options: EditorPropsOptions = {}
 ): FreeLayoutProps {
   const { readonly = false, layerChildren } = options;
+  // 主题预设的快照引用会随切换变化，使小地图等内联色随主题更新
+  const themeSnapshot = useTheme();
   return useMemo<FreeLayoutProps>(
     () => ({
       background: true,
@@ -164,20 +172,33 @@ export function useEditorProps(
         saveCanvasDocument(full);
       }, 1000),
       /**
-       * 流动线：由模拟执行器决定
+       * 流动线：模拟执行器或探索演示模式决定
        */
-      isFlowingLine: (ctx, line) => simulationService.isFlowingLine(line),
+      isFlowingLine: (ctx, line) =>
+        exploreService.isFlowingLine(line) || simulationService.isFlowingLine(line),
       shortcuts,
       onBind: ({ bind }) => {
         bind(CustomService).toSelf().inSingletonScope();
         bind(ValidateService).toSelf().inSingletonScope();
       },
       /**
-       * 首次渲染完成后：登记当前画布 document（供暂存归属校验），并对齐视口
+       * 首次渲染完成后：登记当前画布 document（供暂存归属校验），对齐视口，
+       * 并解析深链 hash（#node-<id>）定位聚焦节点
        */
       onAllLayersRendered(ctx) {
         areaViewStore.attachDocument(ctx.document);
         ctx.tools.fitView(false);
+        const match = window.location.hash.match(/^#node-(.+)$/);
+        if (!match) {
+          return;
+        }
+        const nodeId = decodeURIComponent(match[1]);
+        const node = findNodeById(ctx, nodeId);
+        if (!node) {
+          return;
+        }
+        void ctx.get(WorkflowSelectService).selectNodeAndScrollToView(node);
+        exploreService.focus(ctx, nodeId, 'downstream');
       },
       i18n: {
         locale: navigator.language,
@@ -219,18 +240,18 @@ export function useEditorProps(
             canvasWidth: 182,
             canvasHeight: 102,
             canvasPadding: 50,
-            canvasBackground: 'rgba(242, 243, 245, 1)',
+            canvasBackground: themeSnapshot.preset.minimapBg,
             canvasBorderRadius: 10,
-            viewportBackground: 'rgba(255, 255, 255, 1)',
+            viewportBackground: themeSnapshot.preset.minimapViewport,
             viewportBorderRadius: 4,
-            viewportBorderColor: 'rgba(6, 7, 9, 0.10)',
+            viewportBorderColor: themeSnapshot.preset.minimapViewportBorder,
             viewportBorderWidth: 1,
             viewportBorderDashLength: undefined,
-            nodeColor: 'rgba(0, 0, 0, 0.10)',
+            nodeColor: themeSnapshot.preset.minimapNode,
             nodeBorderRadius: 2,
             nodeBorderWidth: 0.145,
-            nodeBorderColor: 'rgba(6, 7, 9, 0.10)',
-            overlayColor: 'rgba(255, 255, 255, 0.55)',
+            nodeBorderColor: themeSnapshot.preset.minimapViewportBorder,
+            overlayColor: themeSnapshot.preset.minimapOverlay,
           },
         }),
         createDownloadPlugin({
@@ -254,6 +275,6 @@ export function useEditorProps(
         createPanelManagerPlugin({ layerChildren }),
       ],
     }),
-    [initialData, nodeRegistries, readonly, layerChildren]
+    [initialData, nodeRegistries, readonly, layerChildren, themeSnapshot]
   );
 }

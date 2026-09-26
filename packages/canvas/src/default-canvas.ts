@@ -118,6 +118,36 @@ export const defaultCanvasData: CanvasDocumentJSON = {
         ],
       },
     },
+    {
+      id: 'group-seq',
+      type: 'group',
+      meta: { position: { x: 0, y: 11200 } },
+      data: {
+        parentID: 'root',
+        title: '时序图',
+        color: 'Cyan',
+        blockIDs: ['seq-user', 'seq-frontend', 'seq-order-svc', 'seq-pay-svc', 'note-seq'],
+      },
+    },
+    {
+      id: 'group-df',
+      type: 'group',
+      meta: { position: { x: 5600, y: 11200 } },
+      data: {
+        parentID: 'root',
+        title: '数据流图',
+        color: 'Indigo',
+        blockIDs: [
+          'df-source-user',
+          'df-source-order',
+          'df-transform-clean',
+          'df-transform-agg',
+          'df-store-dw',
+          'df-store-dashboard',
+          'note-df',
+        ],
+      },
+    },
 
     // ======================= 数据库结构区（3 列） =======================
     {
@@ -803,6 +833,122 @@ export const defaultCanvasData: CanvasDocumentJSON = {
           '全链路通过 Trace ID 串联，指标由 Prometheus 采集。',
       },
     },
+
+    // ======================= 时序图区（4 列，下单消息时序） =======================
+    {
+      id: 'seq-user',
+      type: 'seq-participant',
+      meta: { position: { x: 0, y: 0 } },
+      data: {
+        title: '用户',
+        comment: '会话发起方，小程序 / Web 终端',
+      },
+    },
+    {
+      id: 'seq-frontend',
+      type: 'seq-participant',
+      meta: { position: { x: 460, y: 0 } },
+      data: {
+        title: '前端应用',
+        comment: '商城前端，负责展示与表单提交',
+      },
+    },
+    {
+      id: 'seq-order-svc',
+      type: 'seq-participant',
+      meta: { position: { x: 920, y: 0 } },
+      data: {
+        title: '订单服务',
+        comment: '下单主链路与订单状态流转',
+      },
+    },
+    {
+      id: 'seq-pay-svc',
+      type: 'seq-participant',
+      meta: { position: { x: 1380, y: 0 } },
+      data: {
+        title: '支付服务',
+        comment: '支付单管理与渠道对接',
+      },
+    },
+    {
+      id: 'note-seq',
+      type: 'note',
+      meta: { position: { x: 0, y: 760 } },
+      data: {
+        size: { width: 360, height: 220 },
+        note:
+          '下单时序：用户提交 → 前端转发 → 订单服务创建订单并发起支付 → 支付服务返回支付参数 → 支付成功后异步回调 → 订单服务返回结果。\n' +
+          '参与者按列排布，消息连线自上而下表达时间顺序。',
+      },
+    },
+
+    // ======================= 数据流图区（4 列，用户行为分析管道） =======================
+    {
+      id: 'df-source-user',
+      type: 'df-source',
+      meta: { position: { x: 0, y: 0 } },
+      data: {
+        title: '用户行为埋点',
+        comment: '页面浏览、点击与停留事件流，来自 SDK 上报',
+      },
+    },
+    {
+      id: 'df-source-order',
+      type: 'df-source',
+      meta: { position: { x: 460, y: 0 } },
+      data: {
+        title: '订单数据',
+        comment: '订单与支付流水，来自交易主库的 CDC 同步',
+      },
+    },
+    {
+      id: 'df-transform-clean',
+      type: 'df-transform',
+      meta: { position: { x: 0, y: 380 } },
+      data: {
+        title: '清洗去重',
+        comment: '过滤无效事件，按事件 ID 去重，统一字段口径',
+      },
+    },
+    {
+      id: 'df-transform-agg',
+      type: 'df-transform',
+      meta: { position: { x: 460, y: 380 } },
+      data: {
+        title: '指标聚合',
+        comment: '按天聚合 UV / 转化率 / GMV 等业务指标',
+      },
+    },
+    {
+      id: 'df-store-dw',
+      type: 'df-store',
+      meta: { position: { x: 0, y: 760 } },
+      data: {
+        title: '数仓明细表',
+        comment: 'ODS / DWD 层明细，供分析师取数',
+      },
+    },
+    {
+      id: 'df-store-dashboard',
+      type: 'df-store',
+      meta: { position: { x: 460, y: 760 } },
+      data: {
+        title: '报表宽表',
+        comment: 'DWS 层指标宽表，直接支撑看板查询',
+      },
+    },
+    {
+      id: 'note-df',
+      type: 'note',
+      meta: { position: { x: 920, y: 380 } },
+      data: {
+        size: { width: 360, height: 220 },
+        note:
+          '数据流：埋点与订单数据 → 清洗去重 → 指标聚合 → 数仓明细表 / 报表宽表。\n' +
+          '离线批处理按日调度，核心指标口径与业务方季度评审对齐。',
+      },
+    },
   ],
 
   edges: [
@@ -1110,6 +1256,70 @@ export const defaultCanvasData: CanvasDocumentJSON = {
       sourceNodeID: 'rt-respond',
       targetNodeID: 'rt-req-end',
       data: { kind: 'flow' },
+    },
+
+    // ======================= 时序图消息（dependency，自上而下 = 时间先后） =======================
+    {
+      sourceNodeID: 'seq-user',
+      targetNodeID: 'seq-frontend',
+      data: { kind: 'dependency', label: '提交订单请求' },
+    },
+    {
+      sourceNodeID: 'seq-frontend',
+      targetNodeID: 'seq-order-svc',
+      data: { kind: 'dependency', label: '转发创建订单' },
+    },
+    {
+      sourceNodeID: 'seq-order-svc',
+      targetNodeID: 'seq-pay-svc',
+      data: { kind: 'dependency', label: '发起支付' },
+    },
+    {
+      sourceNodeID: 'seq-pay-svc',
+      targetNodeID: 'seq-frontend',
+      data: { kind: 'dependency', label: '返回支付参数' },
+    },
+    {
+      sourceNodeID: 'seq-pay-svc',
+      targetNodeID: 'seq-order-svc',
+      data: { kind: 'dependency', label: '异步回调支付结果' },
+    },
+    {
+      sourceNodeID: 'seq-order-svc',
+      targetNodeID: 'seq-frontend',
+      data: { kind: 'dependency', label: '返回下单结果' },
+    },
+    {
+      sourceNodeID: 'seq-frontend',
+      targetNodeID: 'seq-user',
+      data: { kind: 'dependency', label: '展示下单结果' },
+    },
+
+    // ======================= 数据流图（dependency，数据流向） =======================
+    {
+      sourceNodeID: 'df-source-user',
+      targetNodeID: 'df-transform-clean',
+      data: { kind: 'dependency', label: '事件流接入' },
+    },
+    {
+      sourceNodeID: 'df-source-order',
+      targetNodeID: 'df-transform-clean',
+      data: { kind: 'dependency', label: 'CDC 同步' },
+    },
+    {
+      sourceNodeID: 'df-transform-clean',
+      targetNodeID: 'df-transform-agg',
+      data: { kind: 'dependency', label: '清洗后明细' },
+    },
+    {
+      sourceNodeID: 'df-transform-agg',
+      targetNodeID: 'df-store-dw',
+      data: { kind: 'dependency', label: '指标落明细' },
+    },
+    {
+      sourceNodeID: 'df-transform-agg',
+      targetNodeID: 'df-store-dashboard',
+      data: { kind: 'dependency', label: '指标落宽表' },
     },
   ],
 };

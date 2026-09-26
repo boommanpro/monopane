@@ -5,7 +5,7 @@ description: '把任意代码仓库解析成「项目文档画布」JSON：数�
 
 # 项目文档画布生成器（project-canvas-gen）
 
-把一个代码仓库解析成符合 `docs/canvas-schema.md`（Canvas Schema v1.0）的单一 JSON 文件。
+把一个代码仓库解析成符合 `docs/canvas-schema.md`（Canvas Schema v1.1）的单一 JSON 文件。
 该 JSON 可被「项目文档画布」Web 应用直接导入，渲染为一张带小地图的自由画布。
 
 - 数据契约（唯一权威）：`docs/canvas-schema.md`
@@ -94,7 +94,7 @@ node .trae/skills/project-canvas-gen/scripts/validate-canvas.mjs <产物路径>
 
 ```json
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "nodes": [
     /* ... */
   ],
@@ -149,7 +149,7 @@ x = col * 460   y = row * 380
 超出上限就截断：只保留最重要的节点，并在同区域放一个 `note` 说明省略了多少个。
 `note` 不计入上限，坐标同样按网格落位。
 
-### 节点类型（7 类，`type` 字段取值）
+### 节点类型（12 类，`type` 字段取值）
 
 | type             | data 必填                                                                          | 端口                      |
 | ---------------- | ---------------------------------------------------------------------------------- | ------------------------- |
@@ -159,10 +159,20 @@ x = col * 460   y = row * 380
 | `flow-end`       | `title`                                                                            | 仅左 in                   |
 | `flow-step`      | `title`                                                                            | 左 in / 右 out            |
 | `flow-decision`  | `title`、`defaultBranch` ∈ `yes`/`no`                                              | 左 in / 右 out `yes`+`no` |
+| `seq-participant`| `title`（时序图参与者，`comment` 可选）                                            | 左 in / 右 out            |
+| `seq-message`    | `title`（时序图消息，`description` 可选）                                          | 左 in / 右 out            |
+| `df-source`      | `title`（数据源，`comment` 可选）                                                  | 左 in / 右 out            |
+| `df-transform`   | `title`（数据转换，`comment` 可选）                                                | 左 in / 右 out            |
+| `df-store`       | `title`（数据存储，`comment` 可选）                                                | 左 in / 右 out            |
 | `note`           | `note`（纯文本）                                                                   | 无                        |
 | `group`          | `title`、`color`、`blockIDs`                                                       | 无                        |
 
-可选字段：`db-table.comment`、`arch-component.tech[]`（≤4）、`arch-component.description`（≤40 字）、`flow-*.description`、`note.size`（默认 240×150）。
+可选字段：`db-table.comment`、`arch-component.tech[]`（≤4）、`arch-component.description`（≤40 字）、`flow-*.description`、`seq-participant.comment`、`seq-message.description`、`df-*.comment`、`note.size`（默认 240×150）。
+
+时序图 / 数据流图（新图种）说明：
+- 时序图：代码仓库中出现**跨模块调用链**、**请求-响应交互**、**事件通知**等时序关系时，用 `seq-participant` 表达参与方、`seq-message` 表达一次交互消息，消息流按 `flow` 连线。
+- 数据流图：出现**数据采集 → 清洗/聚合 → 落库**这类流转时，用 `df-source`（数据源）→ `df-transform`（转换处理）→ `df-store`（存储）串联，数据流按 `flow` 连线。
+- 新图种节点同样放进某个区域容器，遵守网格坐标与连线约束。
 
 ### 连线
 

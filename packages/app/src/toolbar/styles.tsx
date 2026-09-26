@@ -22,10 +22,10 @@ export const ToolbarBar = styled.div`
   column-gap: 2px;
   height: 40px;
   padding: 0 6px;
-  background-color: #fff;
-  border: 1px solid rgba(68, 83, 130, 0.25);
+  background-color: var(--mp-toolbar-bg);
+  border: 1px solid var(--mp-toolbar-border);
   border-radius: 10px;
-  box-shadow: rgba(0, 0, 0, 0.04) 0px 2px 6px 0px, rgba(0, 0, 0, 0.02) 0px 4px 12px 0px;
+  box-shadow: var(--mp-card-shadow);
   pointer-events: auto;
 `;
 
@@ -37,17 +37,17 @@ export const ToolbarToggle = styled.button`
   width: 40px;
   height: 40px;
   padding: 0;
-  border: 1px solid rgba(68, 83, 130, 0.25);
+  border: 1px solid var(--mp-toolbar-border);
   border-radius: 10px;
-  background-color: #fff;
-  box-shadow: rgba(0, 0, 0, 0.04) 0px 2px 6px 0px, rgba(0, 0, 0, 0.02) 0px 4px 12px 0px;
+  background-color: var(--mp-toolbar-bg);
+  box-shadow: var(--mp-card-shadow);
   color: var(--semi-color-text-2);
   cursor: pointer;
   pointer-events: auto;
 
   &:hover {
     color: var(--semi-color-primary);
-    border-color: color-mix(in srgb, var(--semi-color-primary) 40%, rgba(68, 83, 130, 0.25));
+    border-color: color-mix(in srgb, var(--semi-color-primary) 40%, var(--mp-toolbar-border));
   }
 `;
 

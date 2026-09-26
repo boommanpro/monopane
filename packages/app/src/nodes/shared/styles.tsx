@@ -16,9 +16,9 @@ export const CardSection = styled.div`
 export const FieldList = styled.div`
   max-height: 276px;
   overflow-y: auto;
-  border: 1px solid rgba(6, 7, 9, 0.08);
+  border: 1px solid var(--mp-field-row-border);
   border-radius: 6px;
-  background-color: #fff;
+  background-color: var(--mp-field-bg);
 `;
 
 export const FieldRow = styled.div`
@@ -28,7 +28,7 @@ export const FieldRow = styled.div`
   padding: 4px 8px;
   font-size: 12px;
   line-height: 18px;
-  border-bottom: 1px solid rgba(6, 7, 9, 0.06);
+  border-bottom: 1px solid var(--mp-field-row-border);
 
   &:last-child {
     border-bottom: none;
@@ -38,7 +38,7 @@ export const FieldRow = styled.div`
 export const FieldName = styled.span`
   font-family: 'SF Mono', Menlo, Consolas, monospace;
   font-weight: 600;
-  color: #1c1f23;
+  color: var(--mp-card-title);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

@@ -4,6 +4,26 @@
  */
 
 :root {
+  /* 本项目组件主题变量（JS 应用预设后覆盖；此处为浅色默认值兜底） */
+  --mp-card-bg: #ffffff;
+  --mp-card-border: rgba(6, 7, 9, 0.15);
+  --mp-card-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.04), 0 4px 12px 0 rgba(0, 0, 0, 0.02);
+  --mp-card-title: #1c1f23;
+  --mp-card-selected-border: #4e40e5;
+  --mp-field-bg: #ffffff;
+  --mp-field-row-border: rgba(6, 7, 9, 0.06);
+  --mp-toolbar-bg: #ffffff;
+  --mp-toolbar-border: rgba(68, 83, 130, 0.25);
+  --mp-note-bg: #fffbed;
+  --mp-note-outline: #f2b600;
+  --mp-note-focus-bg: #fff3ea;
+  --mp-note-focus-outline: #ff811a;
+  --mp-minimap-bg: rgba(242, 243, 245, 1);
+  --mp-minimap-viewport: rgba(255, 255, 255, 1);
+  --mp-minimap-viewport-border: rgba(6, 7, 9, 0.1);
+  --mp-minimap-node: rgba(0, 0, 0, 0.1);
+  --mp-minimap-overlay: rgba(255, 255, 255, 0.55);
+
   /* Port colors */
   --g-workflow-port-color-primary: #4d53e8;
   --g-workflow-port-color-secondary: #9197f1;
@@ -32,9 +52,9 @@
   font-size: 11px;
   line-height: 16px;
   white-space: nowrap;
-  color: rgba(28, 31, 35, 0.85);
-  background-color: #fff;
-  border: 1px solid rgba(68, 83, 130, 0.25);
+  color: var(--mp-card-title);
+  background-color: var(--mp-card-bg);
+  border: 1px solid var(--mp-toolbar-border);
   pointer-events: none;
 }
 
@@ -124,4 +144,32 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/**
+ * 探索交互（搜索定位 / 上下游可达 / 路径探查）的节点高亮
+ * 由 ExploreService 驱动 BaseNode 给节点包装器附加对应 class
+ */
+.explore-focus {
+  box-shadow: 0 0 0 2px rgba(77, 83, 232, 0.55), 0 0 16px 2px rgba(77, 83, 232, 0.35);
+}
+
+.explore-reachable {
+  box-shadow: 0 0 0 2px rgba(59, 179, 70, 0.55);
+}
+
+.explore-path {
+  box-shadow: 0 0 0 2px rgba(224, 140, 0, 0.6);
+}
+
+.explore-dim {
+  opacity: 0.35;
+}
+
+/**
+ * 深色 / 预设主题下的小地图等全局元素兜底
+ */
+[data-theme='dark'] .gedit-playground-scroll-right-block,
+[data-theme='dark'] .gedit-playground-scroll-bottom-block {
+  background-color: rgba(255, 255, 255, 0.25);
 }

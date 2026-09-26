@@ -15,6 +15,7 @@ import { EditorRenderer, FreeLayoutEditorProvider } from '@flowgram.ai/free-layo
 import '@flowgram.ai/free-layout-editor/index.css';
 import './styles/index.css';
 import type { FlowDocumentJSON } from './typings';
+import { themeStore } from './theme';
 import { nodeRegistries } from './nodes';
 import { useEditorProps } from './hooks';
 import { getDefaultCanvasDocument } from './data/storage';
@@ -31,6 +32,9 @@ function resolveInitialData(): FlowDocumentJSON {
   }
   return getDefaultCanvasDocument();
 }
+
+/** 首次加载：应用持久化的主题预设（含跟随系统模式） */
+themeStore.init();
 
 /** 首次加载：初始化分区视图状态（模块加载时执行一次，避免渲染期副作用） */
 areaViewStore.resetWith(resolveInitialData(), resolveAreaIdFromPath() ?? undefined);

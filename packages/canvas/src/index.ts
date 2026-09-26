@@ -18,4 +18,7 @@ export * from './constants';
 export * from './validate';
 export * from './simulation';
 export * from './area-view';
+export * from './graph';
+export * from './compare';
+export * from './layout-issues';
 export { defaultCanvasData } from './default-canvas';

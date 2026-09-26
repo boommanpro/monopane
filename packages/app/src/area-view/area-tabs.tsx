@@ -24,6 +24,8 @@ const AREA_DOT_COLORS: Record<string, string> = {
   Violet: '#a78bfa',
   Green: '#4ade80',
   Orange: '#fb923c',
+  Cyan: '#22d3ee',
+  Indigo: '#818cf8',
 };
 
 export const AreaTabs = () => {

@@ -4,9 +4,9 @@
 
 import { describe, expect, it } from 'vitest';
 
+import type { CanvasDocumentJSON, CanvasEdgeJSON, CanvasNodeJSON } from '../document';
 import { defaultCanvasData } from '../default-canvas';
 import { filterDocumentToArea, listAreaSummaries, mergeAreaSlice } from '../area-view';
-import type { CanvasDocumentJSON, CanvasEdgeJSON, CanvasNodeJSON } from '../document';
 
 const groupNode = (id: string, blockIDs: string[]): CanvasNodeJSON => ({
   id,
@@ -48,12 +48,14 @@ describe('listAreaSummaries', () => {
     expect(summaries[0].nodeCount).toBe(2);
   });
 
-  it('内置示例四大区域都有内容', () => {
+  it('内置示例所有区域都有内容', () => {
     expect(listAreaSummaries(defaultCanvasData).map((item) => item.areaId)).toEqual([
       'group-db',
       'group-arch',
       'group-flow',
       'group-runtime',
+      'group-seq',
+      'group-df',
     ]);
   });
 

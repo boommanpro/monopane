@@ -1,4 +1,4 @@
-# 画布 Schema 契约（Canvas Schema v1.0）
+# 画布 Schema 契约（Canvas Schema v1.1）
 
 本文件是「项目画布」的**唯一数据契约**：解析 Skill（`.trae/skills/project-canvas-gen`）按它产出数据，Web 应用按它加载与渲染。任何字段变更都必须同步修改本文件与 `packages/canvas/src/types.ts`、`packages/canvas/src/document.ts`，并递增 `schemaVersion`。
 
@@ -8,7 +8,7 @@
 
 ```json
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "nodes": [
     /* 节点数组，见第 3 节 */
   ],
@@ -18,9 +18,9 @@
 }
 ```
 
-- `schemaVersion`：必填，当前为 `"1.0"`。应用校验 `major` 版本，不匹配时拒绝导入。
+- `schemaVersion`：必填，当前为 `"1.1"`。应用校验 `major` 版本，不匹配时拒绝导入。
 - `nodes` / `edges`：与 FlowGram 文档格式一致；`nodes` 为**扁平数组**，容器归属通过容器的 `data.blockIDs` 表达。
-- 兼容性：导入时也接受不含 `schemaVersion` 的裸 FlowGram 文档（视为 `1.0`），导出时始终带 `schemaVersion`。
+- 兼容性：导入时也接受不含 `schemaVersion` 的裸 FlowGram 文档（视为 `1.x`），导出时始终带 `schemaVersion`。
 
 ## 2. 区域布局规范
 
@@ -255,6 +255,69 @@ y = row * 380
 
 见 2.1。仅用于四大区域，容器不可嵌套，子节点通过 `blockIDs` 声明。
 
+### 3.8 `seq-participant` / `seq-message` 时序图节点
+
+用于表达**系统交互时序**（谁在什么时候调用谁）。`seq-participant` 是参与者（角色 / 系统 / 服务），`seq-message` 是参与者之间的一次交互消息。
+
+```json
+{
+  "id": "seq-participant-user",
+  "type": "seq-participant",
+  "meta": { "position": { "x": 0, "y": 0 } },
+  "data": { "title": "用户", "comment": "终端用户" }
+}
+```
+
+```json
+{
+  "id": "seq-message-submit-order",
+  "type": "seq-message",
+  "meta": { "position": { "x": 460, "y": 0 } },
+  "data": { "title": "提交订单请求", "description": "POST /api/orders" }
+}
+```
+
+- `seq-participant`：`title` 必填，参与者名；`comment` 可选，参与者说明。
+- `seq-message`：`title` 必填，消息名；`description` 可选，消息内容 / 触发条件（**注意：是 `description` 不是 `comment`**）。
+- 端口：两者左右各一（`input` + `output`），消息流按 `flow` 连线，方向即消息走向。
+
+### 3.9 `df-source` / `df-transform` / `df-store` 数据流图节点
+
+用于表达**数据流转**（数据从哪来、经过哪些处理、落到哪）。三者共用 `data.title` + `data.comment`：
+
+```json
+{
+  "id": "df-source-kafka",
+  "type": "df-source",
+  "meta": { "position": { "x": 0, "y": 0 } },
+  "data": { "title": "Kafka 用户行为流", "comment": "埋点实时上报" }
+}
+```
+
+```json
+{
+  "id": "df-transform-aggregate",
+  "type": "df-transform",
+  "meta": { "position": { "x": 460, "y": 0 } },
+  "data": { "title": "按日聚合", "comment": "窗口 1 天，输出 DWD 明细" }
+}
+```
+
+```json
+{
+  "id": "df-store-dws",
+  "type": "df-store",
+  "meta": { "position": { "x": 920, "y": 0 } },
+  "data": { "title": "DWS 汇总表", "comment": "按维度汇总，供报表查询" }
+}
+```
+
+- `df-source`：数据源（业务系统 / 事件流 / 上游库表），`title` 必填。
+- `df-transform`：数据转换 / 处理（清洗、聚合、加工），`title` 必填。
+- `df-store`：数据存储（数仓表 / 报表库），`title` 必填。
+- `comment`：三者均可选，补充说明 / 口径描述。
+- 端口：三者左右各一（`input` + `output`），数据流按 `flow` 连线，方向即数据流向。
+
 ## 4. 连线语义
 
 ```json
@@ -280,7 +343,7 @@ y = row * 380
 
 ## 5. 校验清单（Skill 输出前自检）
 
-1. `schemaVersion` = `"1.0"`，`nodes` / `edges` 均为数组。
+1. `schemaVersion` = `"1.1"`，`nodes` / `edges` 均为数组。
 2. 每个区域容器存在且 `meta.position` 等于 2.1 表格中的原点。
 3. 所有子节点 id 出现在其所属容器的 `data.blockIDs` 中，且不出现在其他容器的 `blockIDs` 中。
 4. 子节点坐标满足 `x % 460 === 0 && y % 380 === 0`。

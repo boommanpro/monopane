@@ -14,20 +14,31 @@ describe('内置示例画布', () => {
     expect(collectLayoutIssues(defaultCanvasData)).toEqual([]);
   });
 
-  it('四个区域的原点与文档契约一致，且彼此不重叠', () => {
-    expect(AREAS.map((area) => area.origin)).toEqual([
-      { x: 0, y: 0 },
-      { x: 5600, y: 0 },
-      { x: 0, y: 5600 },
-      { x: 5600, y: 5600 },
-    ]);
-    // 区域之间至少空出一个网格列 / 行，避免容器在视觉上贴在一起
-    const [leftTop, rightTop, leftBottom] = AREAS;
-    expect(rightTop.origin.x - leftTop.origin.x).toBeGreaterThanOrEqual(GRID_COLUMN_WIDTH);
-    expect(leftBottom.origin.y - leftTop.origin.y).toBeGreaterThanOrEqual(GRID_ROW_HEIGHT);
+  it('每个区域的原点与文档契约一致，且彼此不重叠', () => {
+    // 全部区域容器必须存在且原点与契约一致（内置示例是完整画布）
+    const areaContainers = new Map(
+      defaultCanvasData.nodes
+        .filter((node) => node.type === CanvasNodeType.Area)
+        .map((group) => [group.data.title, group.meta?.position])
+    );
+    AREAS.forEach((area) => {
+      expect(areaContainers.get(area.title), `缺少区域容器「${area.title}」`).toEqual({
+        x: area.origin.x,
+        y: area.origin.y,
+      });
+    });
+    // 任意两个区域的原点间距不小于一个网格列 / 行，避免容器在视觉上贴在一起
+    for (let i = 0; i < AREAS.length; i += 1) {
+      for (let j = i + 1; j < AREAS.length; j += 1) {
+        const gapX = Math.abs(AREAS[i].origin.x - AREAS[j].origin.x);
+        const gapY = Math.abs(AREAS[i].origin.y - AREAS[j].origin.y);
+        expect(gapX === 0 || gapX >= GRID_COLUMN_WIDTH).toBe(true);
+        expect(gapY === 0 || gapY >= GRID_ROW_HEIGHT).toBe(true);
+      }
+    }
   });
 
-  it('四大区域都有内容，且都带一个区域说明便签', () => {
+  it('每个区域都有内容，且都带一个区域说明便签', () => {
     const notesByArea = new Map<string, number>();
     defaultCanvasData.nodes
       .filter((node) => node.type === CanvasNodeType.Area)

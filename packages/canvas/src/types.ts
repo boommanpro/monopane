@@ -5,7 +5,7 @@
  * 详细说明见 docs/canvas-schema.md
  */
 
-export const CANVAS_SCHEMA_VERSION = '1.0';
+export const CANVAS_SCHEMA_VERSION = '1.1';
 
 /**
  * 画布节点类型，与 packages/app/src/nodes 中注册的节点一一对应
@@ -37,6 +37,16 @@ export enum CanvasNodeType {
   RuntimeEvent = 'runtime-event',
   /** 运行期定时任务 */
   RuntimeScheduled = 'runtime-scheduled',
+  /** 时序图：参与者（生命线角色） */
+  SeqParticipant = 'seq-participant',
+  /** 时序图：消息交互 */
+  SeqMessage = 'seq-message',
+  /** 数据流图：数据源 */
+  DfSource = 'df-source',
+  /** 数据流图：数据转换处理 */
+  DfTransform = 'df-transform',
+  /** 数据流图：数据存储 */
+  DfStore = 'df-store',
   /** 便签注释 */
   Note = 'note',
   /** 区域容器 */
@@ -125,6 +135,46 @@ export interface NoteNodeData {
     width: number;
     height: number;
   };
+}
+
+/** 时序图：参与者（生命线角色） */
+export interface SeqParticipantNodeData {
+  /** 参与者名称，如「用户」「订单服务」 */
+  title: string;
+  /** 参与者说明 */
+  comment?: string;
+}
+
+/** 时序图：消息交互 */
+export interface SeqMessageNodeData {
+  /** 消息名，如「提交订单请求」 */
+  title: string;
+  /** 消息内容说明 */
+  description?: string;
+}
+
+/** 数据流图：数据源 */
+export interface DfSourceNodeData {
+  /** 数据源名 */
+  title: string;
+  /** 数据源说明 */
+  comment?: string;
+}
+
+/** 数据流图：数据转换处理 */
+export interface DfTransformNodeData {
+  /** 处理节点名 */
+  title: string;
+  /** 处理说明 */
+  comment?: string;
+}
+
+/** 数据流图：数据存储 */
+export interface DfStoreNodeData {
+  /** 存储名 */
+  title: string;
+  /** 存储说明 */
+  comment?: string;
 }
 
 /**

@@ -9,8 +9,8 @@
  * 与 simulation.ts 一样，这里不依赖任何编辑器实例，便于单测。
  */
 
-import { AREAS } from './constants';
 import type { CanvasDocumentJSON, CanvasEdgeJSON, CanvasNodeJSON } from './document';
+import { AREAS } from './constants';
 
 /** 标准区域容器节点 id 集合 */
 const AREA_GROUP_IDS = new Set(AREAS.map((area) => area.id));

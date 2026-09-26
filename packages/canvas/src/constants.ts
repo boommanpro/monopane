@@ -32,7 +32,7 @@ export interface AreaSpec {
   fillOrder: string;
 }
 
-/** 四大区域：左上数据库、右上架构、左下流程、右下运行逻辑 */
+/** 四大区域：左上数据库、右上架构、左下流程、右下运行逻辑；第二行左侧时序图、右侧数据流图 */
 export const AREAS: readonly AreaSpec[] = [
   {
     id: 'group-db',
@@ -69,6 +69,24 @@ export const AREAS: readonly AreaSpec[] = [
     columns: 3,
     limit: 12,
     fillOrder: '从启动到请求响应顺序',
+  },
+  {
+    id: 'group-seq',
+    title: '时序图',
+    color: 'Cyan',
+    origin: { x: 0, y: 11200 },
+    columns: 4,
+    limit: 12,
+    fillOrder: '参与者放左侧列，消息按时间顺序自上而下、自左向右',
+  },
+  {
+    id: 'group-df',
+    title: '数据流图',
+    color: 'Indigo',
+    origin: { x: 5600, y: 11200 },
+    columns: 4,
+    limit: 12,
+    fillOrder: '按数据流向排列：数据源 → 转换处理 → 数据存储',
   },
 ] as const;
 

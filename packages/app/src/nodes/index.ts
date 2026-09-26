@@ -3,6 +3,7 @@
  */
 
 import { FlowNodeRegistry } from '../typings';
+import { SeqMessageNodeRegistry, SeqParticipantNodeRegistry } from './seq';
 import { RuntimeEventNodeRegistry, RuntimeScheduledNodeRegistry } from './runtime';
 import { NoteNodeRegistry } from './note';
 import { GroupNodeRegistry } from './group';
@@ -16,6 +17,7 @@ import {
   FlowStepNodeRegistry,
   FlowSubprocessNodeRegistry,
 } from './flow';
+import { DfSourceNodeRegistry, DfStoreNodeRegistry, DfTransformNodeRegistry } from './df';
 import { DbViewNodeRegistry } from './db-view';
 import { DbTableNodeRegistry } from './db-table';
 import { ArchComponentNodeRegistry } from './arch-component';
@@ -34,6 +36,11 @@ export const nodeRegistries: FlowNodeRegistry[] = [
   FlowEndNodeRegistry,
   RuntimeEventNodeRegistry,
   RuntimeScheduledNodeRegistry,
+  SeqParticipantNodeRegistry,
+  SeqMessageNodeRegistry,
+  DfSourceNodeRegistry,
+  DfTransformNodeRegistry,
+  DfStoreNodeRegistry,
   NoteNodeRegistry,
   GroupNodeRegistry,
 ];

@@ -11,6 +11,7 @@ import { useClientContext } from '@flowgram.ai/free-layout-editor';
 import { FlowNodeMeta } from '../../typings';
 import { useNodeFormPanel } from '../../plugins/panel-manager-plugin/hooks';
 import { useNodeRenderContext, usePortClick } from '../../hooks';
+import { useExploreClass } from '../../explore/use-explore-class';
 import { scrollToView } from './utils';
 import { NodeWrapperStyle } from './styles';
 
@@ -39,10 +40,14 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = (props) => {
     <WorkflowPortRender key={p.id} entity={p} onClick={!readonly ? onPortClick : undefined} />
   ));
 
+  // 探索高亮 class（focus / reachable / path / dim），空串不高亮
+  const exploreClass = useExploreClass(node.id);
+  const exploreClassName = exploreClass ? `explore-${exploreClass}` : '';
+
   return (
     <>
       <NodeWrapperStyle
-        className={selected ? 'selected' : ''}
+        className={[selected ? 'selected' : '', exploreClassName].filter(Boolean).join(' ')}
         ref={nodeRef}
         draggable
         onDragStart={(e) => {

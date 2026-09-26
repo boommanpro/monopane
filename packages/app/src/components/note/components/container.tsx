@@ -38,8 +38,10 @@ export const CommentContainer: FC<ICommentContainer> = (props) => {
       data-flow-editor-selectable="false"
       style={{
         // tailwind 不支持 outline 的样式，所以这里需要使用 style 来设置
-        outline: focused ? '1px solid #FF811A' : '1px solid #F2B600',
-        backgroundColor: focused ? '#FFF3EA' : '#FFFBED',
+        outline: focused
+          ? '1px solid var(--mp-note-focus-outline)'
+          : '1px solid var(--mp-note-outline)',
+        backgroundColor: focused ? 'var(--mp-note-focus-bg)' : 'var(--mp-note-bg)',
         ...scrollbarStyle,
         ...style,
       }}
