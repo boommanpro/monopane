@@ -10,6 +10,8 @@ export const AreaTabsWrap = styled.div`
   right: 16px;
   z-index: 19;
   pointer-events: none;
+  /* 多个图（区域）时限制 tab 栏宽度，超出部分横向滚动，避免占满页面 */
+  max-width: calc(100% - 32px);
 `;
 
 export const AreaTabsBar = styled.div`
@@ -17,12 +19,19 @@ export const AreaTabsBar = styled.div`
   align-items: center;
   gap: 2px;
   height: 38px;
+  max-width: 100%;
   padding: 0 4px;
+  overflow-x: auto;
   background-color: var(--mp-toolbar-bg);
   border: 1px solid var(--mp-toolbar-border);
   border-radius: 10px;
   box-shadow: var(--mp-card-shadow);
   pointer-events: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 export const AreaTabButton = styled.button<{ $active: boolean }>`

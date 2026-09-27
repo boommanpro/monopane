@@ -22,7 +22,6 @@ import {
   IconMoon,
   IconMore,
   IconPlay,
-  IconPlayCircle,
   IconRedo,
   IconRefresh,
   IconSave,
@@ -90,6 +89,10 @@ export const CanvasToolbar = () => {
   const [themeVisible, setThemeVisible] = useState(false);
   const [structureVisible, setStructureVisible] = useState(false);
   const [compareVisible, setCompareVisible] = useState(false);
+  // 弹窗内展示的完整文档：在打开时（事件回调里）计算一次并缓存，
+  // 避免在渲染期调用 mergeFull()（它会变更分区 store 并通知订阅者，造成无限重渲染）。
+  const [structureDoc, setStructureDoc] = useState<FlowDocumentJSON>({ nodes: [], edges: [] });
+  const [compareDoc, setCompareDoc] = useState<FlowDocumentJSON>({ nodes: [], edges: [] });
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
 
@@ -427,14 +430,6 @@ export const CanvasToolbar = () => {
                 onClick={() => exploreService.clear()}
               />
             </Tooltip>
-            <Tooltip content={demoActive ? '停止演示' : '演示流程（按层推进）'}>
-              <IconButton
-                type="tertiary"
-                theme="borderless"
-                icon={demoActive ? <IconStop /> : <IconPlayCircle />}
-                onClick={handleDemoToggle}
-              />
-            </Tooltip>
 
             <Divider layout="vertical" style={{ height: '16px' }} margin={3} />
 
@@ -604,10 +599,19 @@ export const CanvasToolbar = () => {
                   >
                     清空画布
                   </Dropdown.Item>
+                  <Dropdown.Item
+                    onClick={() => {
+                      setMoreVisible(false);
+                      handleDemoToggle();
+                    }}
+                  >
+                    {demoActive ? '停止演示（按层推进）' : '演示流程（按层推进）'}
+                  </Dropdown.Item>
                   <Divider layout="vertical" style={{ height: '16px' }} margin={3} />
                   <Dropdown.Item
                     onClick={() => {
                       setMoreVisible(false);
+                      setStructureDoc(mergeFull());
                       setStructureVisible(true);
                     }}
                   >
@@ -616,6 +620,7 @@ export const CanvasToolbar = () => {
                   <Dropdown.Item
                     onClick={() => {
                       setMoreVisible(false);
+                      setCompareDoc(mergeFull());
                       setCompareVisible(true);
                     }}
                   >
@@ -647,12 +652,12 @@ export const CanvasToolbar = () => {
       <StructureCheckModal
         visible={structureVisible}
         onClose={() => setStructureVisible(false)}
-        document={mergeFull()}
+        document={structureDoc}
       />
       <CompareModal
         visible={compareVisible}
         onClose={() => setCompareVisible(false)}
-        currentDocument={mergeFull()}
+        currentDocument={compareDoc}
       />
     </ToolbarWrap>
   );
