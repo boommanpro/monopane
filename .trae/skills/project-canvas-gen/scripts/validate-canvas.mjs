@@ -194,6 +194,23 @@ doc.nodes.forEach((node) => {
       });
       break;
     }
+    case 'db-view': {
+      if (!data.title) err(`视图节点 ${id} 缺少 data.title`);
+      if (data.fields === undefined) break;
+      if (!Array.isArray(data.fields)) {
+        err(`视图节点 ${id} 的 data.fields 必须是数组`);
+        break;
+      }
+      data.fields.forEach((field, i) => {
+        if (!field?.name) err(`视图节点 ${id} 的 fields[${i}] 缺少 name`);
+        if (!field?.type) err(`视图节点 ${id} 的 fields[${i}] 缺少 type`);
+        (field?.flags ?? []).forEach((flag) => {
+          if (!FIELD_FLAGS.has(flag))
+            err(`视图节点 ${id} 的字段 ${field.name} 有非法 flags：${flag}`);
+        });
+      });
+      break;
+    }
     case 'arch-component': {
       if (!data.title) err(`架构节点 ${id} 缺少 data.title`);
       if (!CATEGORIES.has(data.category)) {
@@ -206,7 +223,13 @@ doc.nodes.forEach((node) => {
     }
     case 'flow-start':
     case 'flow-end':
-    case 'flow-step': {
+    case 'flow-step':
+    case 'flow-subprocess':
+    case 'flow-parallel':
+    case 'flow-delay':
+    case 'flow-notify':
+    case 'runtime-event':
+    case 'runtime-scheduled': {
       if (!data.title) err(`流程节点 ${id} 缺少 data.title`);
       if (type === 'flow-start') {
         const region = childRegion.get(id);
@@ -241,7 +264,7 @@ doc.nodes.forEach((node) => {
     }
     case 'note': {
       if (typeof data.note !== 'string' || !data.note.trim()) {
-        err(`便签节点 ${id} 的 data.note 是非空字符串`);
+        err(`便签节点 ${id} 的 data.note 必须是非空字符串`);
       }
       break;
     }

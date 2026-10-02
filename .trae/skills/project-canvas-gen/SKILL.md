@@ -54,7 +54,8 @@ description: '把任意代码仓库解析成「项目文档画布」JSON：数�
 | Go      | GORM `gorm:"..."` tag、`AutoMigrate`、`*.sql`                                                               |
 
 提取：表名、字段（名/类型/可空/注释）、主键、唯一键、外键，以及表间关联方向与基数（1:1 / 1:N / N:N）。
-找不到任何 DDL/ORM 时，跳过该区域所有表节点，改放一个 `note` 说明「未发现显式数据库定义」。
+存在数据库视图（`CREATE VIEW`、ORM 中的只读投影 / 报表维度）时，用 `db-view` 节点表达，`fields` 结构与 `db-table` 一致（可选）。
+找不到任何 DDL/ORM 时，跳过该区域所有表/视图节点，改放一个 `note` 说明「未发现显式数据库定义」。
 
 ### 3. 项目架构 → 区域「项目架构」（右上）
 
@@ -69,12 +70,14 @@ description: '把任意代码仓库解析成「项目文档画布」JSON：数�
 
 - 每个关键跳转一个 `flow-step`；条件分支用 `flow-decision`（必须给 `defaultBranch`）
 - 起点 `flow-start`（每区域至多一个），终点 `flow-end`
-- 连线 `kind: "flow"`，`flow-decision` 的出边必须带 `sourcePortID: "yes" | "no"`
+- 内聚逻辑封装用 `flow-subprocess`；并行分支用 `flow-parallel`；等待外部回调 / 定时触发用 `flow-delay`；发通知 / 领域事件用 `flow-notify`
+- 连线 `kind: "flow"`，`flow-decision` 的出边必须带 `sourcePortID: "yes" | "no"`；分支可用 `branch` 重复标记
 - 选**一条**最能代表项目的主流程，不要把所有接口都画上
 
 ### 5. 运行逻辑 → 区域「项目运行逻辑」（右下）
 
 启动流程（bootstrap / main / DI 装配 / 中间件注册）与一次请求的生命周期（鉴权 → 限流 → 参数校验 → 业务 → 持久化 → 响应）。
+事件监听、定时任务等运行期行为用 `runtime-event` / `runtime-scheduled` 表达。
 
 ### 6. 生成 JSON
 
@@ -149,31 +152,40 @@ x = col * 460   y = row * 380
 超出上限就截断：只保留最重要的节点，并在同区域放一个 `note` 说明省略了多少个。
 `note` 不计入上限，坐标同样按网格落位。
 
-### 节点类型（12 类，`type` 字段取值）
+### 节点类型（20 类，`type` 字段取值）
 
-| type              | data 必填                                                                          | 端口                      |
-| ----------------- | ---------------------------------------------------------------------------------- | ------------------------- |
-| `db-table`        | `title`、`fields[]`（`name`/`type` 必填，`flags` ∈ `pk`/`fk`/`unique`/`nullable`） | 左 in / 右 out            |
-| `arch-component`  | `title`、`category`                                                                | 左 in / 右 out            |
-| `flow-start`      | `title`                                                                            | 仅右 out                  |
-| `flow-end`        | `title`                                                                            | 仅左 in                   |
-| `flow-step`       | `title`                                                                            | 左 in / 右 out            |
-| `flow-decision`   | `title`、`defaultBranch` ∈ `yes`/`no`                                              | 左 in / 右 out `yes`+`no` |
-| `seq-participant` | `title`（时序图参与者，`comment` 可选）                                            | 左 in / 右 out            |
-| `seq-message`     | `title`（时序图消息，`description` 可选）                                          | 左 in / 右 out            |
-| `df-source`       | `title`（数据源，`comment` 可选）                                                  | 左 in / 右 out            |
-| `df-transform`    | `title`（数据转换，`comment` 可选）                                                | 左 in / 右 out            |
-| `df-store`        | `title`（数据存储，`comment` 可选）                                                | 左 in / 右 out            |
-| `note`            | `note`（纯文本）                                                                   | 无                        |
-| `group`           | `title`、`color`、`blockIDs`                                                       | 无                        |
+| type                | data 必填                                                                          | 端口                      |
+| ------------------- | ---------------------------------------------------------------------------------- | ------------------------- |
+| `db-table`          | `title`、`fields[]`（`name`/`type` 必填，`flags` ∈ `pk`/`fk`/`unique`/`nullable`） | 左 in / 右 out            |
+| `db-view`           | `title`（数据库视图，`fields[]` 可选）                                             | 左 in / 右 out            |
+| `arch-component`    | `title`、`category`                                                                | 左 in / 右 out            |
+| `flow-start`        | `title`                                                                            | 仅右 out                  |
+| `flow-end`          | `title`                                                                            | 仅左 in                   |
+| `flow-step`         | `title`                                                                            | 左 in / 右 out            |
+| `flow-decision`     | `title`、`defaultBranch` ∈ `yes`/`no`                                              | 左 in / 右 out `yes`+`no` |
+| `flow-subprocess`   | `title`（子流程，封装内聚逻辑）                                                    | 左 in / 右 out            |
+| `flow-parallel`     | `title`（并行网关，模拟执行时全部出边都走）                                        | 左 in / 右 out            |
+| `flow-delay`        | `title`（延时等待，等外部回调 / 定时触发）                                         | 左 in / 右 out            |
+| `flow-notify`       | `title`（通知 / 领域事件发送）                                                     | 左 in / 右 out            |
+| `runtime-event`     | `title`（运行期事件监听，如 HTTP / 领域事件接入点）                                | 左 in / 右 out            |
+| `runtime-scheduled` | `title`（运行期定时任务，如心跳、指标上报、定时对账）                              | 左 in / 右 out            |
+| `seq-participant`   | `title`（时序图参与者，`comment` 可选）                                            | 左 in / 右 out            |
+| `seq-message`       | `title`（时序图消息，`description` 可选）                                          | 左 in / 右 out            |
+| `df-source`         | `title`（数据源，`comment` 可选）                                                  | 左 in / 右 out            |
+| `df-transform`      | `title`（数据转换，`comment` 可选）                                                | 左 in / 右 out            |
+| `df-store`          | `title`（数据存储，`comment` 可选）                                                | 左 in / 右 out            |
+| `note`              | `note`（纯文本）                                                                   | 无                        |
+| `group`             | `title`、`color`、`blockIDs`                                                       | 无                        |
 
-可选字段：`db-table.comment`、`arch-component.tech[]`（≤4）、`arch-component.description`（≤40 字）、`flow-*.description`、`seq-participant.comment`、`seq-message.description`、`df-*.comment`、`note.size`（默认 240×150）。
+可选字段：`db-table.comment`、`db-view.comment`（`db-view.fields[]` 可选，结构与 `db-table.fields` 一致）、`arch-component.tech[]`（≤4）、`arch-component.description`（≤40 字）、`flow-*.description`、`seq-participant.comment`、`seq-message.description`、`df-*.comment`、`note.size`（默认 240×150）。
 
-时序图 / 数据流图（新图种）说明：
+扩展节点说明：
 
+- 流程扩展：`flow-subprocess`（子流程，把一段内聚逻辑封装起来）、`flow-parallel`（并行网关，模拟执行时全部出边都走）、`flow-delay`（延时等待，等待外部回调 / 定时触发）、`flow-notify`（通知 / 领域事件发送），与 `flow-step` 共用 `data.title` + `data.description`，按 `flow` 连线。
+- 运行期：`runtime-event`（运行期事件监听，如 HTTP / 领域事件接入点）、`runtime-scheduled`（运行期定时任务，如心跳、指标上报、定时对账），与流程节点共用 `data.title` + `data.description`，按 `flow` 连线，通常放在「项目运行逻辑」区域。
 - 时序图：代码仓库中出现**跨模块调用链**、**请求-响应交互**、**事件通知**等时序关系时，用 `seq-participant` 表达参与方、`seq-message` 表达一次交互消息，消息流按 `flow` 连线。
 - 数据流图：出现**数据采集 → 清洗/聚合 → 落库**这类流转时，用 `df-source`（数据源）→ `df-transform`（转换处理）→ `df-store`（存储）串联，数据流按 `flow` 连线。
-- 新图种节点同样放进某个区域容器，遵守网格坐标与连线约束。
+- 扩展节点同样放进某个区域容器，遵守网格坐标与连线约束。
 
 ### 连线
 
@@ -185,11 +197,11 @@ x = col * 460   y = row * 380
 }
 ```
 
-| `kind`        | 用途     | 额外要求                                  |
-| ------------- | -------- | ----------------------------------------- |
-| `db-relation` | 表关联   | `relation` ∈ `1:1`/`1:N`/`N:N`            |
-| `dependency`  | 架构依赖 | `label` 可选                              |
-| `flow`        | 流程走向 | `flow-decision` 出边必须带 `sourcePortID` |
+| `kind`        | 用途     | 额外要求                                                                    |
+| ------------- | -------- | --------------------------------------------------------------------------- |
+| `db-relation` | 表关联   | `relation` ∈ `1:1`/`1:N`/`N:N`                                              |
+| `dependency`  | 架构依赖 | `label` 可选                                                                |
+| `flow`        | 流程走向 | `flow-decision` 出边必须带 `sourcePortID`；`branch` ∈ `yes`/`no` 可重复标记 |
 
 硬约束：**无自环**、**不跨区域连线**、连线方向即数据/控制流方向。
 

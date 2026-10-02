@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "1.1",
   "nodes": [
     {
       "id": "group-db",
@@ -18,7 +18,7 @@
       "meta": { "position": { "x": 0, "y": 0 } },
       "data": {
         "size": { "width": 360, "height": 150 },
-        "note": "本仓库未发现数据库定义：无 SQL 迁移、无 Prisma / TypeORM / SQLAlchemy / JPA / GORM 模型。\n\n画布文档自身以「schemaVersion 1.0 的 JSON」形式持久化在浏览器 localStorage（key: monopane-canvas-doc-v1），属于客户端存储而非关系型数据库。"
+        "note": "本仓库未发现数据库定义：无 SQL 迁移、无 Prisma / TypeORM / SQLAlchemy / JPA / GORM 模型。\n\n画布文档自身以「schemaVersion 1.1 的 JSON」形式持久化在浏览器 localStorage（key: monopane-canvas-doc-v1），属于客户端存储而非关系型数据库。"
       }
     },
 
@@ -176,7 +176,7 @@
       "data": {
         "title": "画布文档存储",
         "category": "storage",
-        "tech": ["localStorage", "schemaVersion 1.0"],
+        "tech": ["localStorage", "schemaVersion 1.1"],
         "description": "校验、防抖暂存、损坏时回退内置示例"
       }
     },
