@@ -1,0 +1,274 @@
+{
+  "schemaVersion": "1.1",
+  "nodes": [
+    {
+      "id": "group-arch",
+      "type": "group",
+      "meta": { "position": { "x": 5600, "y": 0 } },
+      "data": {
+        "parentID": "root",
+        "title": "1 · 能做什么",
+        "color": "Violet",
+        "blockIDs": ["arch-doc", "arch-collab", "arch-notify", "note-arch"]
+      }
+    },
+    {
+      "id": "group-flow",
+      "type": "group",
+      "meta": { "position": { "x": 0, "y": 5600 } },
+      "data": {
+        "parentID": "root",
+        "title": "2 · 怎么用（用户旅程）",
+        "color": "Green",
+        "blockIDs": ["flow-start", "flow-create", "flow-invite", "flow-edit", "flow-publish", "flow-end", "note-flow"]
+      }
+    },
+    {
+      "id": "group-seq",
+      "type": "group",
+      "meta": { "position": { "x": 0, "y": 11200 } },
+      "data": {
+        "parentID": "root",
+        "title": "3 · 一次关键交互",
+        "color": "Cyan",
+        "blockIDs": ["seq-m1", "seq-m2", "seq-m3", "seq-user", "seq-browser", "seq-server", "seq-m4", "seq-m5", "seq-m6"]
+      }
+    },
+    {
+      "id": "arch-doc",
+      "type": "arch-component",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": {
+        "title": "文档编辑器（总管）",
+        "category": "frontend",
+        "tech": ["React", "Slate"],
+        "description": "管理文档内容的读写与本地草稿"
+      }
+    },
+    {
+      "id": "arch-collab",
+      "type": "arch-component",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": {
+        "title": "实时协作（联络员）",
+        "category": "service",
+        "description": "多人编辑的同步中枢，转发增量操作"
+      }
+    },
+    {
+      "id": "arch-notify",
+      "type": "arch-component",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": {
+        "title": "消息通知",
+        "category": "thirdparty",
+        "description": "站内信 / 邮件，@ 提醒与评论通知"
+      }
+    },
+    {
+      "id": "note-arch",
+      "type": "note",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": {
+        "size": { "width": 420, "height": 320 },
+        "note": "面向非技术读者：标题用生活化比喻（总管 / 联络员），真实术语对照放在各节点 description 里，区域标题带编号引导阅读顺序。"
+      }
+    },
+    {
+      "id": "flow-start",
+      "type": "flow-start",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": { "title": "打开应用" }
+    },
+    {
+      "id": "flow-create",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": { "title": "创建文档" }
+    },
+    {
+      "id": "flow-invite",
+      "type": "flow-step",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": { "title": "邀请协作者" }
+    },
+    {
+      "id": "flow-edit",
+      "type": "flow-step",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": { "title": "多人实时编辑" }
+    },
+    {
+      "id": "flow-publish",
+      "type": "flow-step",
+      "meta": { "position": { "x": 460, "y": 380 } },
+      "data": { "title": "发布 / 分享链接" }
+    },
+    {
+      "id": "flow-end",
+      "type": "flow-end",
+      "meta": { "position": { "x": 920, "y": 380 } },
+      "data": { "title": "完成协作" }
+    },
+    {
+      "id": "note-flow",
+      "type": "note",
+      "meta": { "position": { "x": 0, "y": 760 } },
+      "data": {
+        "size": { "width": 420, "height": 320 },
+        "note": "路线图模式：把「用户旅程 / 发展方向」这类非流程主题表达成一条路径 flow-start → flow-step × N → flow-end，完全合规且阅读体验好。"
+      }
+    },
+    {
+      "id": "seq-m1",
+      "type": "seq-message",
+      "meta": { "position": { "x": 0, "y": 0 } },
+      "data": { "title": "打开文档" }
+    },
+    {
+      "id": "seq-m2",
+      "type": "seq-message",
+      "meta": { "position": { "x": 460, "y": 0 } },
+      "data": { "title": "建立 WebSocket 连接" }
+    },
+    {
+      "id": "seq-m3",
+      "type": "seq-message",
+      "meta": { "position": { "x": 920, "y": 0 } },
+      "data": { "title": "拉取最新快照" }
+    },
+    {
+      "id": "seq-user",
+      "type": "seq-participant",
+      "meta": { "position": { "x": 0, "y": 380 } },
+      "data": { "title": "用户", "comment": "终端用户" }
+    },
+    {
+      "id": "seq-browser",
+      "type": "seq-participant",
+      "meta": { "position": { "x": 460, "y": 380 } },
+      "data": { "title": "浏览器", "comment": "文档客户端" }
+    },
+    {
+      "id": "seq-server",
+      "type": "seq-participant",
+      "meta": { "position": { "x": 920, "y": 380 } },
+      "data": { "title": "文档服务", "comment": "协作后端" }
+    },
+    {
+      "id": "seq-m4",
+      "type": "seq-message",
+      "meta": { "position": { "x": 0, "y": 760 } },
+      "data": { "title": "增量同步操作" }
+    },
+    {
+      "id": "seq-m5",
+      "type": "seq-message",
+      "meta": { "position": { "x": 460, "y": 760 } },
+      "data": { "title": "冲突合并结果" }
+    },
+    {
+      "id": "seq-m6",
+      "type": "seq-message",
+      "meta": { "position": { "x": 920, "y": 760 } },
+      "data": { "title": "光标位置广播" }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "arch-doc",
+      "targetNodeID": "arch-collab",
+      "data": { "kind": "dependency", "label": "编辑同步" }
+    },
+    {
+      "sourceNodeID": "arch-collab",
+      "targetNodeID": "arch-notify",
+      "data": { "kind": "dependency", "label": "事件触发" }
+    },
+    {
+      "sourceNodeID": "flow-start",
+      "targetNodeID": "flow-create",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-create",
+      "targetNodeID": "flow-invite",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-invite",
+      "targetNodeID": "flow-edit",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-edit",
+      "targetNodeID": "flow-publish",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "flow-publish",
+      "targetNodeID": "flow-end",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-user",
+      "targetNodeID": "seq-m1",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-m1",
+      "targetNodeID": "seq-browser",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-browser",
+      "targetNodeID": "seq-m2",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-m2",
+      "targetNodeID": "seq-server",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-server",
+      "targetNodeID": "seq-m3",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-m3",
+      "targetNodeID": "seq-browser",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-browser",
+      "targetNodeID": "seq-m4",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-m4",
+      "targetNodeID": "seq-server",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-server",
+      "targetNodeID": "seq-m5",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-m5",
+      "targetNodeID": "seq-browser",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-browser",
+      "targetNodeID": "seq-m6",
+      "data": { "kind": "flow" }
+    },
+    {
+      "sourceNodeID": "seq-m6",
+      "targetNodeID": "seq-user",
+      "data": { "kind": "flow" }
+    }
+  ]
+}

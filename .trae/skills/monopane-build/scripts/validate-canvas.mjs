@@ -99,8 +99,10 @@ const ROW_HEIGHT = 380;
 
 const errors = [];
 const warnings = [];
+const infos = [];
 const err = (msg) => errors.push(msg);
 const warn = (msg) => warnings.push(msg);
+const info = (msg) => infos.push(msg);
 
 const file = process.argv[2];
 if (!file) {
@@ -306,6 +308,22 @@ doc.nodes.forEach((node) => {
     case 'note': {
       if (typeof data.note !== 'string' || !data.note.trim()) {
         err(`便签节点 ${id} 的 data.note 必须是非空字符串`);
+        break;
+      }
+      // 便签文字溢出启发式：按 CJK 16px 宽 + 行高 24px 估算所需行数，超出尺寸高度则 warn。
+      // 校验器无法精确知道渲染高度，这只是防呆提示（经验值：420×320 约可容 120 字）。
+      const size = data.size ?? { width: 240, height: 150 };
+      const textWidth = [...data.note].reduce(
+        (sum, ch) => sum + (ch.codePointAt(0) > 0x2e80 ? 1 : 0.55),
+        0
+      );
+      const charsPerLine = Math.max(1, Math.floor((size.width - 20) / 16));
+      const linesNeeded = Math.ceil(textWidth / charsPerLine);
+      const linesFitting = Math.max(1, Math.floor((size.height - 12) / 24));
+      if (linesNeeded > linesFitting) {
+        warn(
+          `便签节点 ${id} 约 ${linesNeeded} 行文字超过尺寸 ${size.width}×${size.height} 可容纳的 ${linesFitting} 行，渲染会被截断；建议增大 size（约 420×320 可容 120 字）`
+        );
       }
       break;
     }
@@ -361,6 +379,15 @@ doc.edges.forEach((edge, index) => {
   if (kind === 'db-relation' && !RELATIONS.has(edge?.data?.relation)) {
     err(`表关联 ${label} 缺少合法的 relation（1:1 / 1:N / N:N）`);
   }
+  if (
+    (kind === 'flow' || kind === 'dependency') &&
+    typeof edge?.data?.label === 'string' &&
+    edge.data.label.length > 10
+  ) {
+    warn(
+      `连线 ${label} 的标签 ${edge.data.label.length} 字过长，可能被节点卡片遮挡；建议 ≤ 6-8 字或把语义挪到节点 description`
+    );
+  }
   if (kind === 'flow' && source.type === 'flow-decision') {
     const port = edge?.sourcePortID;
     if (port !== 'yes' && port !== 'no') {
@@ -372,7 +399,87 @@ doc.edges.forEach((edge, index) => {
   }
 });
 
-// 6. 孤立节点提示（除 note / group 外无任何连线的节点）
+// 6. 同区域同坐标碰撞：两个子节点若写了相同 (x, y)，渲染会直接叠卡
+const posByRegion = new Map();
+doc.nodes.forEach((node) => {
+  if (node.type === 'group') return;
+  const region = childRegion.get(node.id);
+  const pos = node.meta?.position;
+  if (!region || !pos) return;
+  const key = `${region}@${pos.x},${pos.y}`;
+  if (!posByRegion.has(key)) posByRegion.set(key, []);
+  posByRegion.get(key).push(node.id);
+});
+for (const [key, ids] of posByRegion) {
+  if (ids.length > 1) {
+    const [region, pos] = key.split('@');
+    warn(`同区域坐标碰撞：${ids.join('、')} 都位于区域 ${region} 的 {${pos}}，会叠卡渲染，请错开坐标`);
+  }
+}
+
+// 7. 流程链可达性：flow-start 出发能否到达 flow-end；flow-decision 的 yes/no 出边是否齐全
+const flowOutEdges = new Map();
+doc.edges.forEach((edge) => {
+  if (edge?.data?.kind !== 'flow') return;
+  if (!flowOutEdges.has(edge.sourceNodeID)) flowOutEdges.set(edge.sourceNodeID, []);
+  flowOutEdges.get(edge.sourceNodeID).push(edge);
+});
+const flowRegions = new Set(
+  doc.nodes
+    .filter((node) => node.type === 'flow-start' && childRegion.has(node.id))
+    .map((node) => childRegion.get(node.id))
+);
+for (const region of flowRegions) {
+  const regionTitle = REGIONS[region]?.title ?? region;
+  const starts = doc.nodes.filter(
+    (node) => node.type === 'flow-start' && childRegion.get(node.id) === region
+  );
+  const ends = doc.nodes.filter(
+    (node) => node.type === 'flow-end' && childRegion.get(node.id) === region
+  );
+  if (!starts.length || !ends.length) continue;
+  // BFS：从 flow-start 沿 flow 出边遍历
+  const visited = new Set();
+  const queue = starts.map((node) => node.id);
+  for (const id of queue) visited.add(id);
+  while (queue.length) {
+    const current = queue.shift();
+    for (const edge of flowOutEdges.get(current) ?? []) {
+      if (!visited.has(edge.targetNodeID)) {
+        visited.add(edge.targetNodeID);
+        queue.push(edge.targetNodeID);
+      }
+    }
+  }
+  const unreachable = ends
+    .map((node) => node.id)
+    .filter((id) => !visited.has(id));
+  if (unreachable.length) {
+    warn(
+      `区域「${regionTitle}」的 flow-end（${unreachable.join('、')}）从 flow-start 出发不可达，请检查连线方向`
+    );
+  }
+}
+doc.nodes.forEach((node) => {
+  if (node.type !== 'flow-decision') return;
+  const outs = flowOutEdges.get(node.id) ?? [];
+  if (!outs.length) {
+    warn(`判断节点 ${node.id} 没有任何 flow 出边，流程可能在此中断，确认是否符合预期`);
+    return;
+  }
+  const ports = new Set(outs.map((edge) => edge?.sourcePortID));
+  for (const port of ['yes', 'no']) {
+    if (!ports.has(port)) {
+      warn(
+        `判断节点 ${node.id} 缺少 "${port}" 分支出边（现有端口：${[...ports].join('/') || '无'}）`
+      );
+    }
+  }
+});
+
+// 8. 孤立节点提示（除 note / group 外无任何连线的节点）。
+//    按区域语义分级：架构/数据库区域（能力地图、独立表）不连线是正常设计 → info；
+//    流程/时序/数据流区域里断链则通常是问题 → warn。
 const linked = new Set();
 doc.edges.forEach((edge) => {
   linked.add(edge?.sourceNodeID);
@@ -382,7 +489,21 @@ const islands = doc.nodes.filter(
   (node) => node.type !== 'group' && node.type !== 'note' && !linked.has(node.id)
 );
 if (islands.length) {
-  warn(`以下节点没有任何连线（确认是否符合预期）：${islands.map((n) => n.id).join('、')}`);
+  const infoIslands = islands.filter((node) => {
+    const region = childRegion.get(node.id);
+    return region === 'group-arch' || region === 'group-db';
+  });
+  const warnIslands = islands.filter((node) => !infoIslands.includes(node));
+  if (warnIslands.length) {
+    warn(`以下节点没有任何连线（确认是否符合预期）：${warnIslands.map((n) => n.id).join('、')}`);
+  }
+  if (infoIslands.length) {
+    info(
+      `以下节点无连线（位于架构/数据库区域，独立项属正常设计，仅供参考）：${infoIslands
+        .map((n) => n.id)
+        .join('、')}`
+    );
+  }
 }
 
 report();
@@ -402,6 +523,7 @@ function report() {
   console.log(`节点 ${doc.nodes?.length ?? 0} 个，连线 ${doc.edges?.length ?? 0} 条`);
   console.log(`区域用量：${regionStats.join('　')}`);
   warnings.forEach((msg) => console.log(`警告：${msg}`));
+  infos.forEach((msg) => console.log(`提示：${msg}`));
   errors.forEach((msg) => console.log(`错误：${msg}`));
 
   if (errors.length) {

@@ -23,6 +23,16 @@ description: '把任意输入（代码仓库、网站、产品文档、直接贴
 
 > 为什么这样：如果你 clone 目标仓库到 `$TMPDIR` 后在那里执行，`node .trae/...`、`node packages/app/...` 会找不到文件而失败。所有校验 / 构建脚本都假设以 monopane 仓库根为 cwd。
 
+### Step 0 · 首次准备（fresh clone 必做）
+
+```bash
+git clone --depth 1 https://github.com/boommanpro/monopane.git
+cd monopane && pnpm install
+pnpm --filter @monopane/canvas build   # 产出 packages/canvas/dist，viewer 构建依赖它
+```
+
+> 为什么：`@monopane/canvas` 的 `main` 指向 `./dist/index.js`，而 `dist` 不入库（见 `.gitignore`）。**校验脚本（validate-canvas.mjs）零依赖可直接跑**；但构建单体 HTML 必须先生成 canvas 包产物，否则 `pnpm build:viewer` 会报 `Module not found: Can't resolve '@monopane/canvas'`。`build-standalone.mjs` 检测到 canvas dist 缺失时会自动补建，但首次准备先建一次更省事。
+
 ## 何时调用
 
 - 「分析这个项目生成画布」/「生成项目文档画布」/「generate canvas for this repo」
@@ -41,7 +51,7 @@ description: '把任意输入（代码仓库、网站、产品文档、直接贴
    ```
    解析完成后可保留（用户可能要求二次分析），不要 `rm -rf` 用户已存在的目录。
    > 注意：GitHub URL 必须是**代码仓库地址**（`https://github.com/owner/repo`）；网站官网首页不是仓库，无法 clone。
-3. **网站 URL**：用浏览器 / 网页抓取读取公开页面内容（功能介绍、文档、架构说明）。抓不到全部内容时，基于可读到的页面 + 通用领域知识推断，并在产物 `note` 里说明依据。
+3. **网站 URL**：用浏览器 / 网页抓取读取公开页面内容（功能介绍、文档、架构说明）。**优先在页面里找 GitHub / 官方文档入口**：能找到源码仓库就 clone（`git clone --depth 1`），或抓取架构文档，**以源码 / 架构文档为准补充架构事实**（模块划分、运行机制、消息流等）；官网首页只做能力与定位素材。抓不到全部内容时，基于可读到的页面 + 通用领域知识推断，并在产物 `note` 里说明依据。
 4. **产品文档 / PRD / 文章**：用户直接提供的文本或文件路径，作为主要素材。
 5. 什么都没有时，先问用户要输入。
 
@@ -119,6 +129,7 @@ node .trae/skills/monopane-build/scripts/validate-canvas.mjs <产物路径>
 ```
 
 脚本报错必须修完再交付。脚本通过后，再用 `docs/canvas-schema.md` 第 5 节清单人工复核一遍语义问题（表关联方向、分支端口、是否漏了必填字段）。
+> 脚本已内置启发式防呆（warn 不阻断）：便签尺寸能否容下文字、flow/dependency 连线标签过长、同区域同坐标叠卡、flow-start 到 flow-end 可达性、flow-decision 的 yes/no 出边是否齐全。
 
 ### 8. 构建单体 HTML（交付时默认执行）
 
@@ -131,7 +142,11 @@ node packages/app/scripts/build-standalone.mjs <产物路径> [<输出.html>]
 
 - 输出路径省略时，与 JSON 同目录、同名 `.html`；
 - 脚本会自动生成 viewer 模板（若缺失），**无需**手动预构建；若仍失败，按报错提示处理；
-- 构建成功后**必须自检产物**：确认输出文件已生成、体积合理（MB 级），并抽查开头含 `window.__CANVAS_DATA__` 注入数据；
+- 构建成功后**必须自检产物**：
+  1. 文件已生成、体积合理（MB 级）；
+  2. **数量比对（等价性检查）**：把脚本打印的「节点 N + 连线 M」与输入 JSON 的 `nodes` / `edges` 数量逐一比对，不一致就是注入失败；
+  3. 抽查开头含 `window.__CANVAS_DATA__` 注入数据；
+  4. **视觉验收用 URL 深链逐区域抽查**：在浏览器打开 `file:///…/xxx.html#/group-flow`、`#/group-seq` 等 hash，直接定位到对应区域截图核对（支持的区域 id：`group-db` / `group-arch` / `group-flow` / `group-runtime` / `group-seq` / `group-df`；实现见 `packages/app/src/area-view/store.ts`）；
 - 交付时同时给出 JSON 与 HTML 两个产物路径。
 
 > 应用内「导出离线 HTML」走的是同一套模板与注入逻辑（`src/export/standalone-html.ts`），产物与 CLI 一致。
@@ -141,6 +156,8 @@ node packages/app/scripts/build-standalone.mjs <产物路径> [<输出.html>]
 输入是网站、产品文档、PRD 或直接贴的文本时，按下面五步组织画布。产出契约（slot id、网格、节点类型、自检、构建）与模式 A 完全相同，**只需**在区域语义上换一套。
 
 ### B1. 提炼内容骨架
+
+先确认**受众**：面向技术人员就直用术语；面向非技术人员时——节点 title 用生活化比喻，description 放真实术语对照（如「联络员 · 负责转发消息（Service Worker）」）；区域标题带编号引导阅读顺序（如「1 · 先认识它」「2 · 能做什么」）。受众决定了节点命名与区域标题的措辞，动手前先定。
 
 把素材拆成几大主题，映射到区域 slot（`data.title` 自由命名，不必用默认标题）：
 
@@ -160,6 +177,7 @@ node packages/app/scripts/build-standalone.mjs <产物路径> [<输出.html>]
 
 - 「能做什么」区：每个核心能力一个 `arch-component`（`category` 用 `frontend` / `service` / `thirdparty` / `other` 等），按能力分组排列，依赖关系用 `dependency` 连线。
 - 「核心流程」区：主线用 `flow-start` → `flow-step` → `flow-end`，分支用 `flow-decision`（带 `defaultBranch`）。
+- 「发展方向 / 路线图」这类非流程主题：用 `flow-start` → `flow-step` × N → `flow-end` 把路线图表达成一条「路径」，完全合规且阅读体验好（参考 `examples/website-product-canvas.json`）。
 - 「怎么运行」区：部署组件、运行环境用 `arch-component`；事件 / 定时行为用 `runtime-event` / `runtime-scheduled`。
 - 「关键交互」区：参与方用 `seq-participant`，一次交互消息用 `seq-message` 按 `flow` 连线。
 - 「数据流转」区：`df-source` → `df-transform` → `df-store` 串联。
@@ -185,7 +203,7 @@ cd "$REPO_ROOT"
 node packages/app/scripts/build-standalone.mjs <产物路径> [<输出.html>]
 ```
 
-构建成功后**必须自检产物**（文件已生成、体积合理、含 `window.__CANVAS_DATA__` 注入），交付时同时给出 JSON 与 HTML 两个路径。
+构建成功后**必须自检产物**（文件已生成、体积合理、**脚本打印的节点/连线数量与输入 JSON 比对一致**、含 `window.__CANVAS_DATA__` 注入），并用 `#/group-flow` 等深链逐区域截图抽查后，交付时同时给出 JSON 与 HTML 两个路径。
 
 ## 布局与格式
 
@@ -314,7 +332,7 @@ x = col * 460   y = row * 380
 
 ## 输出（交付物 = JSON + 单体 HTML，HTML 是默认必备）
 
-1. **画布 JSON**：写到用户指定位置；未指定则写到**被分析项目的当前目录**下 `<repo-name>-canvas.json`。
+1. **画布 JSON**：写到用户指定位置；未指定时——仓库输入写到**被分析项目根目录**下 `<repo-name>-canvas.json`；网站 / 文档 / 文本输入写到**当前工作目录**下 `<名称>-canvas.json`。
 2. **单体 HTML**（同目录同名 `.html`，第 8 步构建）：默认必须产出，供直接双击打开 / 当附件发送；构建失败时必须修复重试，不允许只交付 JSON 就算完成（除非用户明确只要 JSON）。
 3. 交付时给出：两个产物路径、各区域节点/连线数量、被截断的内容（若有）。
 4. 提示用户：HTML 可直接打开；JSON 可在画布应用里点「导入画布 JSON」继续编辑（在线版：https://boommanpro.github.io/monopane/ ），之后可导出 PNG / 离线 HTML 分享。
@@ -326,4 +344,7 @@ x = col * 460   y = row * 380
 - **`flow-decision` 出边漏 `sourcePortID`**：会导致连线挂不到 `yes`/`no` 端口，导入后线错位。
 - **`flow-start` 放了多个**：一个区域只留一个，模拟执行从它出发。
 - **字段列表过长**：单表字段超过 8 个时卡片内部滚动，无需额外占位；但字段超过 20 个建议只留关键字段 + `comment` 说明。
+- **长便签被截断**：`note` 默认 240×150，约容纳 3–4 行文字；长介绍主动给大 `size`，经验值 **420×320 可容约 120 字**（超出会被渲染截断，validate 会按行数启发式 warn）。
+- **连线标签被节点卡片遮挡**：flow / dependency 的 `label` 建议 **≤ 6–8 字**；超长语义挪到节点 `description`（validate 对 label > 10 字会 warn）。`db-relation` 的标签渲染在连线中点，不受此限。
+- **时序图参与者布局**：高扇入扇出（多名参与者互发消息）的时序图，把**参与者放中间行、消息按时间线分上下两排**（前几步在上排、后几步在下排），能消掉横穿整张画布的对角线；参与者全挤在一排会产生长交叉线，返工一次。
 - **把整个仓库都画上**：节点上限是防噪声的硬约束，宁可截断 + `note` 说明，也不要塞满。

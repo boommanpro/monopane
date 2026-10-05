@@ -20,7 +20,11 @@ import { basename, dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+/** 仓库根（pnpm workspace 根，pnpm --filter 在此执行）；ROOT 是 packages/app，再向上两级 */
+const REPO_ROOT = resolve(ROOT, '..', '..');
 const TEMPLATE_FILE = join(ROOT, 'public', 'viewer-template.html');
+/** @monopane/canvas 的构建产物入口；dist 不入库（见 .gitignore），fresh clone 后必须先生成 */
+const CANVAS_DIST_ENTRY = join(REPO_ROOT, 'packages', 'canvas', 'dist', 'index.js');
 /** 必须与 src/export/standalone-html.ts 的 DATA_PLACEHOLDER 保持一致 */
 const DATA_PLACEHOLDER = 'window.__CANVAS_DATA__ = null;';
 
@@ -99,6 +103,29 @@ function loadCanvasData(file) {
 }
 
 /**
+ * 确保 @monopane/canvas 的构建产物存在。viewer 构建（rsbuild）会解析 `@monopane/canvas`
+ * 的 `main` → `./dist/index.js`，而 dist 不入库，fresh clone 后缺失时直接 build:viewer
+ * 会报 `Module not found: Can't resolve '@monopane/canvas'`，因此必须先补建。
+ */
+function ensureCanvasBuilt() {
+  if (existsSync(CANVAS_DIST_ENTRY)) {
+    return;
+  }
+  console.log('[build-standalone] 检测到 @monopane/canvas 未构建（dist 缺失），先自动构建...');
+  try {
+    execSync('pnpm --filter @monopane/canvas build', { cwd: REPO_ROOT, stdio: 'inherit' });
+  } catch (error) {
+    fail(
+      '自动构建 @monopane/canvas 失败，请手动执行 pnpm --filter @monopane/canvas build 后重试：' +
+        (error instanceof Error ? error.message : String(error))
+    );
+  }
+  if (!existsSync(CANVAS_DIST_ENTRY)) {
+    fail('自动构建后 @monopane/canvas 的 dist 仍缺失，请手动执行 pnpm --filter @monopane/canvas build');
+  }
+}
+
+/**
  * 确保 viewer 单体模板可用。模板是构建产物（gitignore 不入库），缺失或格式异常时
  * 自动执行 MODE=viewer 构建生成，避免调用方必须先手动 build:viewer。
  */
@@ -110,11 +137,14 @@ function ensureTemplate() {
     }
   }
   console.log('[build-standalone] 离线模板缺失或格式异常，自动执行 viewer 构建生成中...');
+  // viewer 构建依赖 @monopane/canvas 的 dist，先确保它存在
+  ensureCanvasBuilt();
   try {
     execSync('pnpm build:viewer', { cwd: ROOT, stdio: 'inherit' });
   } catch (error) {
     fail(
-      '自动生成模板失败，请手动执行 pnpm --filter @monopane/app build:viewer 后重试：' +
+      '自动生成模板失败，请确认 @monopane/canvas 已构建（pnpm --filter @monopane/canvas build）' +
+        '后重试 pnpm --filter @monopane/app build:viewer：' +
         (error instanceof Error ? error.message : String(error))
     );
   }
@@ -135,6 +165,11 @@ const payload = JSON.stringify(canvasData).replace(/</g, '\\u003c');
  * 用函数形式替换：数据里可能包含 $& / $' 等字符，直接传字符串会被当成替换模式
  */
 const html = template.replace(DATA_PLACEHOLDER, () => `window.__CANVAS_DATA__ = ${payload};`);
+
+/** 自检：占位符必须被真实数据替换掉，残留说明注入失败，产物不可用 */
+if (html.includes(DATA_PLACEHOLDER)) {
+  fail('数据注入失败：产物中仍残留占位符 ' + DATA_PLACEHOLDER);
+}
 
 const outputFile = outputArg
   ? resolve(outputArg)
