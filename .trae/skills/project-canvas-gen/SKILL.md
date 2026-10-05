@@ -13,6 +13,16 @@ description: '把任意代码仓库解析成「项目文档画布」JSON：数�
 - 应用侧校验兜底：`packages/app/src/data/storage.ts` 调用 `@monopane/canvas` 的 `validateCanvasFile`
 - 自检脚本：`scripts/validate-canvas.mjs`
 
+## 运行环境（先读）
+
+本 skill 位于 **monopane 仓库**内（`.trae/skills/project-canvas-gen/`）。下文中所有 shell 命令都以 **monopane 仓库根目录**为工作目录，或直接把路径换成绝对路径执行：
+
+- 仓库根 `$REPO_ROOT` = 本 skill 文件 `SKILL.md` 向上 3 级目录（含 `.git` 与 `pnpm-workspace.yaml` 的那一层）；
+- 执行前先确认：`cd "$REPO_ROOT"` 可用、且 `node_modules` 已安装（`pnpm install`）；
+- **不要**在临时目录里跑这些命令——相对路径（`.trae/...`、`packages/app/...`）都以仓库根为基准。
+
+> 为什么这样：如果你 clone 目标仓库到 `$TMPDIR` 后在那里执行，`node .trae/...`、`node packages/app/...` 会找不到文件而失败。所有校验 / 构建脚本都假设以 monopane 仓库根为 cwd。
+
 ## 何时调用
 
 - 「分析这个项目生成画布」/「生成项目文档画布」/「generate canvas for this repo」
@@ -85,7 +95,10 @@ description: '把任意代码仓库解析成「项目文档画布」JSON：数�
 
 ### 7. 自检（必须执行，不得跳过）
 
+在仓库根执行（见「运行环境」）：
+
 ```bash
+cd "$REPO_ROOT"
 node .trae/skills/project-canvas-gen/scripts/validate-canvas.mjs <产物路径>
 ```
 
@@ -96,11 +109,13 @@ node .trae/skills/project-canvas-gen/scripts/validate-canvas.mjs <产物路径>
 校验通过后用构建脚本把画布 JSON 打成**可离线双击打开的单体 HTML**（JS / CSS / 字体全部内联，不依赖外部网络）：
 
 ```bash
+cd "$REPO_ROOT"
 node packages/app/scripts/build-standalone.mjs <产物路径> [<输出.html>]
 ```
 
 - 输出路径省略时，与 JSON 同目录、同名 `.html`；
-- 若报「未找到离线模板」，先执行 `pnpm --filter @monopane/app build:viewer` 生成模板再重试；
+- 脚本会自动生成 viewer 模板（若缺失），**无需**手动预构建；若仍失败，按报错提示处理；
+- 构建成功后**必须自检产物**：确认输出文件已生成、体积合理（MB 级），并抽查开头含 `window.__CANVAS_DATA__` 注入数据；
 - 交付时同时给出 JSON 与 HTML 两个产物路径。
 
 > 应用内「导出离线 HTML」走的是同一套模板与注入逻辑（`src/export/standalone-html.ts`），产物与 CLI 一致。
@@ -224,12 +239,12 @@ x = col * 460   y = row * 380
 `<类型前缀>-<业务名>`，小写短横线：`db-user`、`arch-gateway`、`flow-start-order`、`note-db-truncated`。
 同一文件内 id 必须唯一；容器的 `blockIDs` 与节点 id 必须能对上，且一个子节点只能属于一个容器。
 
-## 输出
+## 输出（交付物 = JSON + 单体 HTML，HTML 是默认必备）
 
-- 文件写到用户指定位置；未指定则写到**被分析项目的当前目录**下 `<repo-name>-canvas.json`
-- 校验通过后默认额外产出同名的单体 HTML（见第 8 步）
-- 交付时给出：文件路径、各区域节点/连线数量、被截断的内容（若有）
-- 提示用户：在画布应用里点「导入画布 JSON」即可查看（在线版：https://boommanpro.github.io/monopane/ ），之后可导出 PNG / 离线 HTML 分享；离线 HTML 产物可直接作为附件发送
+1. **画布 JSON**：写到用户指定位置；未指定则写到**被分析项目的当前目录**下 `<repo-name>-canvas.json`。
+2. **单体 HTML**（同目录同名 `.html`，第 8 步构建）：默认必须产出，供直接双击打开 / 当附件发送；构建失败时必须修复重试，不允许只交付 JSON 就算完成（除非用户明确只要 JSON）。
+3. 交付时给出：两个产物路径、各区域节点/连线数量、被截断的内容（若有）。
+4. 提示用户：HTML 可直接打开；JSON 可在画布应用里点「导入画布 JSON」继续编辑（在线版：https://boommanpro.github.io/monopane/ ），之后可导出 PNG / 离线 HTML 分享。
 
 ## 常见坑
 

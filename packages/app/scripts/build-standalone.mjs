@@ -7,12 +7,14 @@
  *
  * 流程：
  *   1. 读取并校验画布 JSON（结构 + 节点类型，与 validateCanvasFile 的底线一致）；
- *   2. 读取 viewer 单体模板（public/viewer-template.html，由 build:viewer 生成）；
+ *   2. 读取 viewer 单体模板（public/viewer-template.html）；模板是构建产物、不入库，
+ *      缺失或格式异常时脚本会自动执行 MODE=viewer 构建生成，无需手动预构建；
  *   3. 把 `window.__CANVAS_DATA__ = null;` 占位替换为真实数据，写出自包含 HTML。
  *
  * 输出默认与输入同目录，扩展名换成 .html。
  */
 
+import { execSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -96,13 +98,36 @@ function loadCanvasData(file) {
   };
 }
 
-if (!existsSync(TEMPLATE_FILE)) {
-  fail(`未找到离线模板 ${TEMPLATE_FILE}，请先执行 pnpm --filter @monopane/app build:viewer`);
+/**
+ * 确保 viewer 单体模板可用。模板是构建产物（gitignore 不入库），缺失或格式异常时
+ * 自动执行 MODE=viewer 构建生成，避免调用方必须先手动 build:viewer。
+ */
+function ensureTemplate() {
+  if (existsSync(TEMPLATE_FILE)) {
+    const existing = readFileSync(TEMPLATE_FILE, 'utf8');
+    if (existing.includes(DATA_PLACEHOLDER)) {
+      return;
+    }
+  }
+  console.log('[build-standalone] 离线模板缺失或格式异常，自动执行 viewer 构建生成中...');
+  try {
+    execSync('pnpm build:viewer', { cwd: ROOT, stdio: 'inherit' });
+  } catch (error) {
+    fail(
+      '自动生成模板失败，请手动执行 pnpm --filter @monopane/app build:viewer 后重试：' +
+        (error instanceof Error ? error.message : String(error))
+    );
+  }
+  if (
+    !existsSync(TEMPLATE_FILE) ||
+    !readFileSync(TEMPLATE_FILE, 'utf8').includes(DATA_PLACEHOLDER)
+  ) {
+    fail('自动生成模板后仍未就绪，请手动执行 pnpm --filter @monopane/app build:viewer');
+  }
 }
+
+ensureTemplate();
 const template = readFileSync(TEMPLATE_FILE, 'utf8');
-if (!template.includes(DATA_PLACEHOLDER)) {
-  fail('离线模板格式不正确，请重新执行 pnpm --filter @monopane/app build:viewer');
-}
 
 const canvasData = loadCanvasData(inputFile);
 const payload = JSON.stringify(canvasData).replace(/</g, '\\u003c');
