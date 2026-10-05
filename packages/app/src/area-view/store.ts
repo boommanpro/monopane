@@ -175,13 +175,22 @@ export class AreaViewStore {
   private recompute(canRunDoc: CanvasDocumentJSON): void {
     const areas = listAreaSummaries(this.full);
     const areaSet = new Map(areas.map((area) => [area.areaId, area]));
-    // 激活的区域即使被清空也保留 tab，避免编辑中 tab 突然消失
-    if (this.mode.kind === 'area' && !areaSet.has(this.mode.areaId)) {
-      const spec = findAreaById(this.mode.areaId);
-      areaSet.set(this.mode.areaId, {
-        areaId: this.mode.areaId,
-        title: spec?.title ?? this.mode.areaId,
-        color: spec?.color ?? 'Gray',
+    // 激活的区域即使被清空也保留 tab，避免编辑中 tab 突然消失；
+    // 标题/配色以完整文档为准（支持产品文档模式自定义），缺失时回退契约默认值
+    const mode = this.mode;
+    if (mode.kind === 'area' && !areaSet.has(mode.areaId)) {
+      const spec = findAreaById(mode.areaId);
+      const group = this.full.nodes.find((node) => node.id === mode.areaId);
+      areaSet.set(mode.areaId, {
+        areaId: mode.areaId,
+        title:
+          typeof group?.data?.title === 'string' && group.data.title
+            ? group.data.title
+            : spec?.title ?? mode.areaId,
+        color:
+          typeof group?.data?.color === 'string' && group.data.color
+            ? group.data.color
+            : spec?.color ?? 'Gray',
         nodeCount: 0,
       });
     }

@@ -37,15 +37,21 @@ function blockIDsOf(node: CanvasNodeJSON | undefined): string[] {
   return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === 'string') : [];
 }
 
-/** 汇总「有内容」的区域，按 AREAS 顺序返回 */
+/**
+ * 汇总「有内容」的区域，按 AREAS 顺序返回。
+ * 标题与配色以文档容器为准（支持产品文档模式自定义标题），缺失时回退契约默认值。
+ */
 export function listAreaSummaries(document: CanvasDocumentJSON): AreaSummary[] {
   const byId = nodeMap(document.nodes);
   return AREAS.map((area) => {
-    const members = blockIDsOf(byId.get(area.id)).filter((id) => byId.has(id));
+    const group = byId.get(area.id);
+    const members = blockIDsOf(group).filter((id) => byId.has(id));
     return {
       areaId: area.id,
-      title: area.title,
-      color: area.color,
+      title:
+        typeof group?.data?.title === 'string' && group.data.title ? group.data.title : area.title,
+      color:
+        typeof group?.data?.color === 'string' && group.data.color ? group.data.color : area.color,
       nodeCount: members.length,
     };
   }).filter((summary) => summary.nodeCount > 0);

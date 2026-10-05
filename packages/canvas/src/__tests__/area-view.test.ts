@@ -66,6 +66,28 @@ describe('listAreaSummaries', () => {
     };
     expect(listAreaSummaries(doc)[0].nodeCount).toBe(1);
   });
+
+  it('标题/配色由文档决定（产品文档模式可自定义）', () => {
+    const doc: CanvasDocumentJSON = {
+      nodes: [
+        {
+          ...groupNode('group-arch', ['arch-a']),
+          data: { title: '能做什么', color: 'Red', blockIDs: ['arch-a'] },
+        },
+        node('arch-a', 'arch-component'),
+        // group-flow 未自定义标题，应回退契约默认值
+        { id: 'group-flow', type: 'group', data: { blockIDs: ['flow-s'] } },
+        node('flow-s', 'flow-start'),
+      ],
+      edges: [],
+    };
+    const summaries = listAreaSummaries(doc);
+    const byId = new Map(summaries.map((item) => [item.areaId, item]));
+    expect(byId.get('group-arch')?.title).toBe('能做什么');
+    expect(byId.get('group-arch')?.color).toBe('Red');
+    // 未自定义的区域回退契约默认值
+    expect(byId.get('group-flow')?.title).toBe('代码流程');
+  });
 });
 
 describe('filterDocumentToArea', () => {

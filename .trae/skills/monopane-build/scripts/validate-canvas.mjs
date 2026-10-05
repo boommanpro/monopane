@@ -48,12 +48,50 @@ const FIELD_FLAGS = new Set(['pk', 'fk', 'unique', 'nullable']);
 const RELATIONS = new Set(['1:1', '1:N', 'N:N']);
 const EDGE_KINDS = new Set(['db-relation', 'dependency', 'flow']);
 
-/** 区域容器契约：标题 → { origin, columns, limit } */
+/** 区域容器契约（按容器 id / slot）：原点、列数、节点上限、默认标题配色 */
 const REGIONS = {
-  数据库结构与关联: { origin: { x: 0, y: 0 }, columns: 3, limit: 12 },
-  项目架构: { origin: { x: 5600, y: 0 }, columns: 4, limit: 16 },
-  代码流程: { origin: { x: 0, y: 5600 }, columns: 3, limit: 20 },
-  项目运行逻辑: { origin: { x: 5600, y: 5600 }, columns: 3, limit: 12 },
+  'group-db': {
+    title: '数据库结构与关联',
+    color: 'Blue',
+    origin: { x: 0, y: 0 },
+    columns: 3,
+    limit: 12,
+  },
+  'group-arch': {
+    title: '项目架构',
+    color: 'Violet',
+    origin: { x: 5600, y: 0 },
+    columns: 4,
+    limit: 16,
+  },
+  'group-flow': {
+    title: '代码流程',
+    color: 'Green',
+    origin: { x: 0, y: 5600 },
+    columns: 3,
+    limit: 20,
+  },
+  'group-runtime': {
+    title: '项目运行逻辑',
+    color: 'Orange',
+    origin: { x: 5600, y: 5600 },
+    columns: 3,
+    limit: 12,
+  },
+  'group-seq': {
+    title: '时序图',
+    color: 'Cyan',
+    origin: { x: 0, y: 11200 },
+    columns: 4,
+    limit: 12,
+  },
+  'group-df': {
+    title: '数据流图',
+    color: 'Indigo',
+    origin: { x: 5600, y: 11200 },
+    columns: 4,
+    limit: 12,
+  },
 };
 
 const COL_WIDTH = 460;
@@ -106,58 +144,61 @@ doc.nodes.forEach((node, index) => {
 
 // 2. 区域容器
 const groups = doc.nodes.filter((node) => node?.type === 'group');
-const childRegion = new Map(); // 子节点 id → 区域标题
-const regionOfTitle = new Map();
+const childRegion = new Map(); // 子节点 id → 区域 slot id
+const regionOfSlot = new Map(); // slot id → 区域容器节点
 
 groups.forEach((group) => {
-  const title = group.data?.title;
-  const spec = REGIONS[title];
+  const spec = REGIONS[group.id];
   if (!spec) {
-    err(`未知区域容器标题「${title}」，必须是：${Object.keys(REGIONS).join(' / ')}`);
+    err(`未知区域容器 id「${group.id}」，必须是：${Object.keys(REGIONS).join(' / ')}`);
     return;
   }
-  if (regionOfTitle.has(title)) err(`区域容器重复：${title}`);
-  regionOfTitle.set(title, group);
+  regionOfSlot.set(group.id, group);
+
+  if (typeof group.data?.title !== 'string' || !group.data.title.trim()) {
+    err(`区域「${group.id}」缺少 data.title（标题自由命名，但必须是非空字符串）`);
+  }
+  if (!group.data?.color) err(`区域「${group.id}」缺少 data.color`);
 
   const pos = group.meta?.position;
   if (!pos || pos.x !== spec.origin.x || pos.y !== spec.origin.y) {
     err(
-      `区域「${title}」原点应为 {x:${spec.origin.x},y:${spec.origin.y}}，实际为 ${JSON.stringify(
-        pos
-      )}`
+      `区域「${spec.title}」原点应为 {x:${spec.origin.x},y:${
+        spec.origin.y
+      }}，实际为 ${JSON.stringify(pos)}`
     );
   }
   if (group.meta?.size) {
-    warn(`区域「${title}」写了 meta.size，容器尺寸应由引擎自适应，建议删除`);
+    warn(`区域「${spec.title}」写了 meta.size，容器尺寸应由引擎自适应，建议删除`);
   }
-  if (!group.data?.color) err(`区域「${title}」缺少 data.color`);
   if (!Array.isArray(group.data?.blockIDs)) {
-    err(`区域「${title}」缺少 data.blockIDs 数组`);
+    err(`区域「${spec.title}」缺少 data.blockIDs 数组`);
     return;
   }
 
   group.data.blockIDs.forEach((id) => {
     if (!byId.has(id)) {
-      err(`区域「${title}」的 blockIDs 引用了不存在的节点：${id}`);
+      err(`区域「${spec.title}」的 blockIDs 引用了不存在的节点：${id}`);
       return;
     }
     if (childRegion.has(id)) {
-      err(`节点 ${id} 同时属于「${childRegion.get(id)}」与「${title}」，一个节点只能属于一个容器`);
+      err(`节点 ${id} 同时属于多个区域容器，一个节点只能属于一个容器`);
       return;
     }
-    childRegion.set(id, title);
+    childRegion.set(id, group.id);
   });
 
-  const limit = spec.limit;
   const counted = group.data.blockIDs.filter((id) => byId.get(id)?.type !== 'note').length;
-  if (counted > limit) {
-    err(`区域「${title}」节点数 ${counted} 超过上限 ${limit}，需要截断并放 note 说明`);
+  if (counted > spec.limit) {
+    err(`区域「${spec.title}」节点数 ${counted} 超过上限 ${spec.limit}，需要截断并放 note 说明`);
   }
 });
 
-Object.keys(REGIONS).forEach((title) => {
-  if (!regionOfTitle.has(title)) err(`缺少区域容器「${title}」`);
-});
+if (regionOfSlot.size === 0) {
+  err(
+    '画布没有任何区域容器，至少需要一个（group-db / group-arch / group-flow / group-runtime / group-seq / group-df）'
+  );
+}
 
 // 3. 节点字段校验
 const startByRegion = new Map();
@@ -232,11 +273,11 @@ doc.nodes.forEach((node) => {
     case 'runtime-scheduled': {
       if (!data.title) err(`流程节点 ${id} 缺少 data.title`);
       if (type === 'flow-start') {
-        const region = childRegion.get(id);
-        if (region) {
-          startByRegion.set(region, (startByRegion.get(region) ?? 0) + 1);
-          if (startByRegion.get(region) > 1)
-            err(`区域「${region}」放了多个 flow-start，只能有一个`);
+        const slotId = childRegion.get(id);
+        if (slotId) {
+          const title = REGIONS[slotId]?.title ?? slotId;
+          startByRegion.set(slotId, (startByRegion.get(slotId) ?? 0) + 1);
+          if (startByRegion.get(slotId) > 1) err(`区域「${title}」放了多个 flow-start，只能有一个`);
         }
       }
       break;
@@ -347,10 +388,14 @@ if (islands.length) {
 report();
 
 function report() {
-  const regionStats = [...regionOfTitle.entries()].map(([title, group]) => {
+  const regionStats = [...regionOfSlot.entries()].map(([slotId, group]) => {
     const ids = Array.isArray(group.data?.blockIDs) ? group.data.blockIDs : [];
     const nodes = ids.filter((id) => byId.get(id)?.type !== 'note').length;
-    return `${title} ${nodes}/${REGIONS[title].limit}`;
+    const title =
+      typeof group.data?.title === 'string' && group.data.title.trim()
+        ? group.data.title
+        : REGIONS[slotId]?.title ?? slotId;
+    return `${title} ${nodes}/${REGIONS[slotId]?.limit ?? '?'}`;
   });
 
   console.log(`文件：${resolve(file)}`);

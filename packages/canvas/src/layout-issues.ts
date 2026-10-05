@@ -8,7 +8,7 @@
 
 import { CanvasNodeType } from './types';
 import type { CanvasDocumentJSON, CanvasNodeJSON } from './document';
-import { findAreaByTitle, GRID_COLUMN_WIDTH, GRID_ROW_HEIGHT } from './constants';
+import { findAreaById, GRID_COLUMN_WIDTH, GRID_ROW_HEIGHT } from './constants';
 
 const VALID_TYPES = new Set<string>(Object.values(CanvasNodeType));
 
@@ -27,31 +27,40 @@ export function collectLayoutIssues(document: CanvasDocumentJSON): string[] {
     byId.set(node.id, node);
   });
 
-  /** 子节点 id -> 所属区域标题 */
+  /** 子节点 id -> 所属区域 slot id */
   const childArea = new Map<string, string>();
-  const groupByTitle = new Map<string, CanvasNodeJSON>();
+  const groupBySlot = new Map<string, CanvasNodeJSON>();
   const startCountByArea = new Map<string, number>();
 
+  /** 报错时优先显示文档自定义标题，缺失则回退契约默认标题 */
+  const regionLabel = (slotId: string): string => {
+    const group = groupBySlot.get(slotId);
+    const title = group?.data?.title;
+    if (typeof title === 'string' && title) return title;
+    return findAreaById(slotId)?.title ?? slotId;
+  };
+
   // ---- 区域容器 ----
+  // 区域按容器 id（slot）识别，标题 / 配色由文档决定（产品文档模式可自定义）。
   // 注意：不要求「全部区域都存在」——用户可以在编辑器中清空 / 删除某个区域，
   // 全区域完整性只在内置示例与 Skill 产出侧做校验。
   nodes
     .filter((node) => node.type === CanvasNodeType.Area)
     .forEach((group) => {
-      const area = findAreaByTitle(group.data?.title);
+      const area = findAreaById(group.id);
       if (!area) {
-        issues.push(`未知区域容器标题「${group.data?.title}」`);
+        issues.push(`未知区域容器 id「${group.id}」`);
         return;
       }
-      if (groupByTitle.has(area.title)) {
-        issues.push(`区域容器重复：${area.title}`);
+      if (groupBySlot.has(area.id)) {
+        issues.push(`区域容器重复：${area.id}`);
       }
-      groupByTitle.set(area.title, group);
+      groupBySlot.set(area.id, group);
 
       const position = group.meta?.position;
       if (position?.x !== area.origin.x || position?.y !== area.origin.y) {
         issues.push(
-          `区域「${area.title}」原点应为 {x:${area.origin.x},y:${
+          `区域「${regionLabel(group.id)}」原点应为 {x:${area.origin.x},y:${
             area.origin.y
           }}，实际为 ${JSON.stringify(position)}`
         );
@@ -59,25 +68,27 @@ export function collectLayoutIssues(document: CanvasDocumentJSON): string[] {
 
       const blockIDs: unknown = group.data?.blockIDs;
       if (!Array.isArray(blockIDs)) {
-        issues.push(`区域「${area.title}」缺少 data.blockIDs 数组`);
+        issues.push(`区域「${regionLabel(group.id)}」缺少 data.blockIDs 数组`);
         return;
       }
       blockIDs.forEach((id: string) => {
         if (!byId.has(id)) {
-          issues.push(`区域「${area.title}」的 blockIDs 引用了不存在的节点：${id}`);
+          issues.push(`区域「${regionLabel(group.id)}」的 blockIDs 引用了不存在的节点：${id}`);
           return;
         }
         const owner = childArea.get(id);
         if (owner) {
-          issues.push(`节点 ${id} 同时属于「${owner}」与「${area.title}」`);
+          issues.push(`节点 ${id} 同时属于「${regionLabel(owner)}」与「${regionLabel(group.id)}」`);
           return;
         }
-        childArea.set(id, area.title);
+        childArea.set(id, area.id);
       });
 
       const counted = blockIDs.filter((id: string) => byId.get(id)?.type !== CanvasNodeType.Note);
       if (counted.length > area.limit) {
-        issues.push(`区域「${area.title}」节点数 ${counted.length} 超过上限 ${area.limit}`);
+        issues.push(
+          `区域「${regionLabel(group.id)}」节点数 ${counted.length} 超过上限 ${area.limit}`
+        );
       }
     });
 
@@ -90,12 +101,12 @@ export function collectLayoutIssues(document: CanvasDocumentJSON): string[] {
     if (node.type === CanvasNodeType.Area) {
       return;
     }
-    const areaTitle = childArea.get(node.id);
-    if (!areaTitle) {
+    const areaId = childArea.get(node.id);
+    if (!areaId) {
       issues.push(`节点 ${node.id} 不在任何区域容器的 blockIDs 中`);
       return;
     }
-    const area = findAreaByTitle(areaTitle)!;
+    const area = findAreaById(areaId)!;
 
     const position = node.meta?.position;
     if (!position) {
@@ -111,7 +122,7 @@ export function collectLayoutIssues(document: CanvasDocumentJSON): string[] {
       issues.push(`节点 ${node.id} 坐标为负`);
     }
     if (position.x >= area.columns * GRID_COLUMN_WIDTH) {
-      issues.push(`节点 ${node.id} 超出区域「${areaTitle}」的 ${area.columns} 列范围`);
+      issues.push(`节点 ${node.id} 超出区域「${regionLabel(areaId)}」的 ${area.columns} 列范围`);
     }
 
     const data = node.data ?? {};
@@ -137,9 +148,9 @@ export function collectLayoutIssues(document: CanvasDocumentJSON): string[] {
         break;
       case CanvasNodeType.FlowStart: {
         if (!data.title) issues.push(`流程节点 ${node.id} 缺少 data.title`);
-        const next = (startCountByArea.get(areaTitle) ?? 0) + 1;
-        startCountByArea.set(areaTitle, next);
-        if (next > 1) issues.push(`区域「${areaTitle}」放了多个 flow-start`);
+        const next = (startCountByArea.get(areaId) ?? 0) + 1;
+        startCountByArea.set(areaId, next);
+        if (next > 1) issues.push(`区域「${regionLabel(areaId)}」放了多个 flow-start`);
         break;
       }
       case CanvasNodeType.FlowEnd:
