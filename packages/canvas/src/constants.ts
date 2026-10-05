@@ -3,7 +3,7 @@
  *
  * 这里是「区域怎么摆」的唯一代码化来源：
  * - docs/canvas-schema.md 第 2 节（数据契约文档）
- * - .trae/skills/monopane-build（解析 Skill 的产出规范）
+ * - .agents/skills/monopane-build（解析 Skill 的产出规范）
  * - packages/canvas/src/__tests__（不变量测试）
  * 三者必须与本文件保持一致。
  */

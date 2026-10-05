@@ -116,7 +116,7 @@ flowgram-diagram/
 ├── docs/
 │   ├── superpowers/specs/2026-09-25-flowgram-canvas-design.md   # 本文档
 │   └── canvas-schema.md                                        # Schema 契约（Skill 依据）
-├── .trae/skills/
+├── .agents/skills/
 │   └── monopane-build/       # 解析 Skill（TRAE Skill，随仓库管理）
 │       ├── SKILL.md              # 工作流定义
 │       └── scripts/validate-canvas.mjs  # 产物自检脚本

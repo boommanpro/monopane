@@ -20,7 +20,7 @@ export type CanvasValidateResult =
  *
  * 校验的是「能不能安全地喂给编辑器」的底线（结构 + 节点类型），
  * 布局规范（网格、区域上限、连线语义）由
- * .trae/skills/monopane-build/scripts/validate-canvas.mjs 做深度自检。
+ * .agents/skills/monopane-build/scripts/validate-canvas.mjs 做深度自检。
  */
 export function validateCanvasFile(input: unknown): CanvasValidateResult {
   if (!input || typeof input !== 'object') {

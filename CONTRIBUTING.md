@@ -25,7 +25,7 @@ monopane/
 │   └── app/            @monopane/app    —— React + FlowGram 编辑器与只读预览
 ├── docs/               数据契约与设计文档
 ├── examples/           示例画布 JSON
-└── .trae/skills/       把代码仓库解析成画布 JSON 的 Skill
+└── .agents/skills/       把代码仓库解析成画布 JSON 的 Skill
 ```
 
 **职责边界**：跨端复用的逻辑（类型、区域常量、校验、模拟分支、内置示例）一律放进 `packages/canvas`，不要引入 `@flowgram.ai/*` 或 React 依赖；只有渲染与交互留在 `packages/app`。
@@ -45,7 +45,7 @@ pnpm build          # 双入口构建
 修改数据契约（`docs/canvas-schema.md`、`packages/canvas/src`）时，必须同步更新：
 
 1. `packages/canvas/src/__tests__/invariants.ts` 中的布局断言；
-2. `.trae/skills/monopane-build/scripts/validate-canvas.mjs` 中的深度校验；
+2. `.agents/skills/monopane-build/scripts/` 中的深度校验与画布工具链（validate-canvas.mjs / canvas.mjs）；
 3. 一条 changeset：`pnpm changeset`。
 
 ## 分支与提交
