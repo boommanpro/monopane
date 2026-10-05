@@ -413,7 +413,9 @@ doc.nodes.forEach((node) => {
 for (const [key, ids] of posByRegion) {
   if (ids.length > 1) {
     const [region, pos] = key.split('@');
-    warn(`同区域坐标碰撞：${ids.join('、')} 都位于区域 ${region} 的 {${pos}}，会叠卡渲染，请错开坐标`);
+    warn(
+      `同区域坐标碰撞：${ids.join('、')} 都位于区域 ${region} 的 {${pos}}，会叠卡渲染，请错开坐标`
+    );
   }
 }
 
@@ -451,12 +453,12 @@ for (const region of flowRegions) {
       }
     }
   }
-  const unreachable = ends
-    .map((node) => node.id)
-    .filter((id) => !visited.has(id));
+  const unreachable = ends.map((node) => node.id).filter((id) => !visited.has(id));
   if (unreachable.length) {
     warn(
-      `区域「${regionTitle}」的 flow-end（${unreachable.join('、')}）从 flow-start 出发不可达，请检查连线方向`
+      `区域「${regionTitle}」的 flow-end（${unreachable.join(
+        '、'
+      )}）从 flow-start 出发不可达，请检查连线方向`
     );
   }
 }

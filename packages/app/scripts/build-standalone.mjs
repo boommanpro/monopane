@@ -121,7 +121,9 @@ function ensureCanvasBuilt() {
     );
   }
   if (!existsSync(CANVAS_DIST_ENTRY)) {
-    fail('自动构建后 @monopane/canvas 的 dist 仍缺失，请手动执行 pnpm --filter @monopane/canvas build');
+    fail(
+      '自动构建后 @monopane/canvas 的 dist 仍缺失，请手动执行 pnpm --filter @monopane/canvas build'
+    );
   }
 }
 

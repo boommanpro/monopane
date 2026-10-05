@@ -19,7 +19,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
-import { basename, dirname, extname, join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
@@ -27,17 +27,60 @@ const VALIDATE_SCRIPT = join(SCRIPT_DIR, 'validate-canvas.mjs');
 
 /** 区域契约（slot id → 原点/列数/上限/默认标题配色），与 constants.ts 同步 */
 const AREAS = {
-  'group-db': { title: '数据库结构与关联', color: 'Blue', origin: { x: 0, y: 0 }, columns: 3, limit: 12 },
-  'group-arch': { title: '项目架构', color: 'Violet', origin: { x: 5600, y: 0 }, columns: 4, limit: 16 },
-  'group-flow': { title: '代码流程', color: 'Green', origin: { x: 0, y: 5600 }, columns: 3, limit: 20 },
-  'group-runtime': { title: '项目运行逻辑', color: 'Orange', origin: { x: 5600, y: 5600 }, columns: 3, limit: 12 },
-  'group-seq': { title: '时序图', color: 'Cyan', origin: { x: 0, y: 11200 }, columns: 4, limit: 12 },
-  'group-df': { title: '数据流图', color: 'Indigo', origin: { x: 5600, y: 11200 }, columns: 4, limit: 12 },
+  'group-db': {
+    title: '数据库结构与关联',
+    color: 'Blue',
+    origin: { x: 0, y: 0 },
+    columns: 3,
+    limit: 12,
+  },
+  'group-arch': {
+    title: '项目架构',
+    color: 'Violet',
+    origin: { x: 5600, y: 0 },
+    columns: 4,
+    limit: 16,
+  },
+  'group-flow': {
+    title: '代码流程',
+    color: 'Green',
+    origin: { x: 0, y: 5600 },
+    columns: 3,
+    limit: 20,
+  },
+  'group-runtime': {
+    title: '项目运行逻辑',
+    color: 'Orange',
+    origin: { x: 5600, y: 5600 },
+    columns: 3,
+    limit: 12,
+  },
+  'group-seq': {
+    title: '时序图',
+    color: 'Cyan',
+    origin: { x: 0, y: 11200 },
+    columns: 4,
+    limit: 12,
+  },
+  'group-df': {
+    title: '数据流图',
+    color: 'Indigo',
+    origin: { x: 5600, y: 11200 },
+    columns: 4,
+    limit: 12,
+  },
 };
 const COL_WIDTH = 460;
 const ROW_HEIGHT = 380;
 /** init --areas 的简写 */
-const AREA_ALIASES = { db: 'group-db', arch: 'group-arch', flow: 'group-flow', runtime: 'group-runtime', seq: 'group-seq', df: 'group-df' };
+const AREA_ALIASES = {
+  db: 'group-db',
+  arch: 'group-arch',
+  flow: 'group-flow',
+  runtime: 'group-runtime',
+  seq: 'group-seq',
+  df: 'group-df',
+};
 
 function fail(message) {
   console.error(`[canvas] ${message}`);
@@ -51,7 +94,9 @@ function findRepoRoot() {
     if (existsSync(join(dir, 'pnpm-workspace.yaml'))) return dir;
     dir = dirname(dir);
   }
-  fail('无法定位 monopane 仓库根（向上未找到 pnpm-workspace.yaml）。请在 monopane 仓库内使用本脚本。');
+  fail(
+    '无法定位 monopane 仓库根（向上未找到 pnpm-workspace.yaml）。请在 monopane 仓库内使用本脚本。'
+  );
 }
 
 function usage() {
@@ -87,7 +132,11 @@ function saveDoc(file, doc) {
 function resolveSlot(token) {
   const slot = AREA_ALIASES[token] ?? token;
   if (!AREAS[slot]) {
-    fail(`未知区域「${token}」，可用：${Object.keys(AREA_ALIASES).join(' / ')} 或完整 slot id（${Object.keys(AREAS).join(' / ')}）`);
+    fail(
+      `未知区域「${token}」，可用：${Object.keys(AREA_ALIASES).join(
+        ' / '
+      )} 或完整 slot id（${Object.keys(AREAS).join(' / ')}）`
+    );
   }
   return slot;
 }
@@ -111,7 +160,10 @@ function cmdInit(args) {
     else if (arg === '--areas') {
       const next = args[++i];
       if (!next) fail('--areas 需要逗号分隔的区域列表');
-      areaTokens = next.split(',').map((t) => t.trim()).filter(Boolean);
+      areaTokens = next
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
     } else if (arg === '--title') {
       const next = args[++i];
       if (!next || !next.includes('=')) fail('--title 需要 <slot>=<标题> 形式');
@@ -131,7 +183,12 @@ function cmdInit(args) {
       id: slot,
       type: 'group',
       meta: { position: { ...spec.origin } },
-      data: { parentID: 'root', title: titles.get(slot) ?? spec.title, color: spec.color, blockIDs: [] },
+      data: {
+        parentID: 'root',
+        title: titles.get(slot) ?? spec.title,
+        color: spec.color,
+        blockIDs: [],
+      },
     };
   });
 
@@ -142,7 +199,9 @@ function cmdInit(args) {
       .map((n) => `${n.data.title}(${n.id} @${n.meta.position.x},${n.meta.position.y})`)
       .join('、')}`
   );
-  console.log('[canvas] 下一步：在 nodes 里添加子节点与连线（不写坐标、不动容器），然后执行 layout。');
+  console.log(
+    '[canvas] 下一步：在 nodes 里添加子节点与连线（不写坐标、不动容器），然后执行 layout。'
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -156,7 +215,8 @@ function cmdLayout(file) {
   const bySlot = new Map(groups.map((group) => [group.id, group]));
 
   for (const group of groups) {
-    if (!AREAS[group.id]) fail(`未知区域容器 id「${group.id}」，必须是：${Object.keys(AREAS).join(' / ')}`);
+    if (!AREAS[group.id])
+      fail(`未知区域容器 id「${group.id}」，必须是：${Object.keys(AREAS).join(' / ')}`);
   }
 
   // 归区：已在 blockIDs 里的直接登记；带 data.slot 提示的自动接线；都没有则报错
@@ -172,7 +232,11 @@ function cmdLayout(file) {
     const hint = node.data?.slot;
     if (childRegion.has(node.id)) {
       if (hint && hint !== childRegion.get(node.id)) {
-        console.log(`[canvas] 提示：${node.id} 的 data.slot(${hint}) 与实际容器(${childRegion.get(node.id)})不一致，以实际容器为准`);
+        console.log(
+          `[canvas] 提示：${node.id} 的 data.slot(${hint}) 与实际容器(${childRegion.get(
+            node.id
+          )})不一致，以实际容器为准`
+        );
       }
       if (hint !== undefined) delete node.data.slot;
       continue;
@@ -211,13 +275,17 @@ function cmdLayout(file) {
   let assigned = 0;
   for (const group of groups.concat(created.map((slot) => bySlot.get(slot)))) {
     const spec = AREAS[group.id];
-    const children = (group.data?.blockIDs ?? []).map((id) => doc.nodes.find((n) => n?.id === id)).filter(Boolean);
+    const children = (group.data?.blockIDs ?? [])
+      .map((id) => doc.nodes.find((n) => n?.id === id))
+      .filter(Boolean);
     const occupied = new Set();
     for (const child of children) {
       const pos = child.meta?.position;
       if (!pos) continue;
       if (pos.x % COL_WIDTH !== 0 || pos.y % ROW_HEIGHT !== 0 || pos.x < 0 || pos.y < 0) {
-        console.log(`[canvas] 警告：${child.id} 保留了不在网格上的手工坐标 {x:${pos.x},y:${pos.y}}，validate 将会报错`);
+        console.log(
+          `[canvas] 警告：${child.id} 保留了不在网格上的手工坐标 {x:${pos.x},y:${pos.y}}，validate 将会报错`
+        );
         continue;
       }
       occupied.add(`${pos.x / COL_WIDTH},${pos.y / ROW_HEIGHT}`);
@@ -232,7 +300,10 @@ function cmdLayout(file) {
           cursor.row++;
         }
       }
-      child.meta = { ...(child.meta ?? {}), position: { x: cursor.col * COL_WIDTH, y: cursor.row * ROW_HEIGHT } };
+      child.meta = {
+        ...(child.meta ?? {}),
+        position: { x: cursor.col * COL_WIDTH, y: cursor.row * ROW_HEIGHT },
+      };
       occupied.add(`${cursor.col},${cursor.row}`);
       cursor.col++;
       if (cursor.col >= spec.columns) {
@@ -271,14 +342,16 @@ function cmdBuild(file, outputArg) {
   const repoRoot = findRepoRoot();
   const buildScript = join(repoRoot, 'packages', 'app', 'scripts', 'build-standalone.mjs');
   if (!existsSync(buildScript)) fail(`构建脚本不存在：${buildScript}`);
-  const result = spawnSync(process.execPath, [buildScript, file, ...(outputArg ? [outputArg] : [])], {
-    stdio: 'inherit',
-  });
+  const result = spawnSync(
+    process.execPath,
+    [buildScript, file, ...(outputArg ? [outputArg] : [])],
+    {
+      stdio: 'inherit',
+    }
+  );
   if (result.status !== 0) fail('构建失败（见上方日志）');
 
-  const htmlPath = outputArg
-    ? resolve(outputArg)
-    : resolve(file).replace(/\.[^.]+$/, '.html');
+  const htmlPath = outputArg ? resolve(outputArg) : resolve(file).replace(/\.[^.]+$/, '.html');
   console.log('[canvas] 构建完成，自动执行等价性核对...');
   const ok = checkEquivalence(file, htmlPath);
   process.exit(ok ? 0 : 1);
@@ -364,7 +437,11 @@ function checkEquivalence(file, htmlPath) {
     problems.push(`  HTML 体积 ${size} KB 明显偏小，可能模板未内联完整`);
   }
 
-  console.log(`[canvas] 产物：${htmlPath}（${size} KB，节点 ${injected.nodes?.length ?? '?'} + 连线 ${injected.edges?.length ?? '?'}）`);
+  console.log(
+    `[canvas] 产物：${htmlPath}（${size} KB，节点 ${injected.nodes?.length ?? '?'} + 连线 ${
+      injected.edges?.length ?? '?'
+    }）`
+  );
   if (problems.length) {
     console.error('[canvas] 等价性核对未通过：');
     problems.forEach((p) => console.error(`[canvas] ${p}`));
