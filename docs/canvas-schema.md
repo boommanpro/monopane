@@ -1,6 +1,6 @@
 # 画布 Schema 契约（Canvas Schema v1.1）
 
-本文件是「项目画布」的**唯一数据契约**：解析 Skill（`.trae/skills/project-canvas-gen`）按它产出数据，Web 应用按它加载与渲染。任何字段变更都必须同步修改本文件与 `packages/canvas/src/types.ts`、`packages/canvas/src/document.ts`，并递增 `schemaVersion`。
+本文件是「项目画布」的**唯一数据契约**：解析 Skill（`.trae/skills/monopane-build`）按它产出数据，Web 应用按它加载与渲染。任何字段变更都必须同步修改本文件与 `packages/canvas/src/types.ts`、`packages/canvas/src/document.ts`，并递增 `schemaVersion`。
 
 ## 1. 文件格式
 

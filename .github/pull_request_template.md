@@ -35,7 +35,7 @@ pnpm build
 ## 数据契约
 
 - [ ] 本次没有改动 `docs/canvas-schema.md` 描述的契约
-- [ ] 改动了契约，并已同步 `packages/canvas/src/__tests__/invariants.ts`、`.trae/skills/project-canvas-gen/scripts/validate-canvas.mjs`，且附上了 changeset（`pnpm changeset`）
+- [ ] 改动了契约，并已同步 `packages/canvas/src/__tests__/invariants.ts`、`.trae/skills/monopane-build/scripts/validate-canvas.mjs`，且附上了 changeset（`pnpm changeset`）
 
 ## 截图 / 录屏
 

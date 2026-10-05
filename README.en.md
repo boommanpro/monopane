@@ -65,7 +65,7 @@ The play button in the toolbar walks the `flow` edges and highlights the executi
 
 ### The parsing skill
 
-[.trae/skills/project-canvas-gen](./.trae/skills/project-canvas-gen/SKILL.md) turns "read a repo → emit canvas JSON" into a repeatable procedure: scan DDL/ORM for tables, derive architecture from directory layers, trace one core path for the flow, then self-check with a script. Sample outputs live in [examples/](./examples):
+[.trae/skills/monopane-build](./.trae/skills/monopane-build/SKILL.md) turns "read a repo → emit canvas JSON" into a repeatable procedure: scan DDL/ORM for tables, derive architecture from directory layers, trace one core path for the flow, then self-check with a script. Sample outputs live in [examples/](./examples):
 
 - [monopane-canvas.json](./examples/monopane-canvas.json) — this repository itself
 - [spring-boot-realworld-canvas.json](./examples/spring-boot-realworld-canvas.json) — a real Java + SQLite backend
@@ -138,7 +138,7 @@ monopane/
 │   ├── canvas-schema.md              the data contract (single source of truth)
 │   └── design/                       archived design docs
 ├── examples/                         real canvas samples produced by the skill
-└── .trae/skills/project-canvas-gen/  the parsing skill and its self-check script
+└── .trae/skills/monopane-build/  the parsing skill and its self-check script
 ```
 
 **Boundary rule**: anything reusable across surfaces (types, area constants, validation, simulation branches, the built-in sample) belongs in `packages/canvas`, which imports neither React nor `@flowgram.ai`. That keeps it usable from the browser, the skill, CI, and unit tests alike. Only rendering and interaction live in `packages/app`.
@@ -149,7 +149,7 @@ monopane/
 
 1. types and logic under `packages/canvas/src/`;
 2. layout assertions in `packages/canvas/src/__tests__/invariants.ts`;
-3. deep checks in `.trae/skills/project-canvas-gen/scripts/validate-canvas.mjs`;
+3. deep checks in `.trae/skills/monopane-build/scripts/validate-canvas.mjs`;
 4. a changeset.
 
 ## Deploying to GitHub Pages

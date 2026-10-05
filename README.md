@@ -65,7 +65,7 @@ pnpm --filter @monopane/app build:standalone <canvas.json> [output.html]
 
 ### 解析 Skill
 
-仓库内的 [.trae/skills/project-canvas-gen](./.trae/skills/project-canvas-gen/SKILL.md) 把「读仓库 → 产出画布 JSON」固化成了可复用的流程：先扫 DDL / ORM 找表结构，再按目录分层建架构，然后追主链路画流程，最后用脚本自检。产物示例见 [examples/](./examples)：
+仓库内的 [.trae/skills/monopane-build](./.trae/skills/monopane-build/SKILL.md) 把「读仓库 → 产出画布 JSON」固化成了可复用的流程：先扫 DDL / ORM 找表结构，再按目录分层建架构，然后追主链路画流程，最后用脚本自检。产物示例见 [examples/](./examples)：
 
 - [monopane-canvas.json](./examples/monopane-canvas.json)：本仓库自己的画布
 - [spring-boot-realworld-canvas.json](./examples/spring-boot-realworld-canvas.json)：一个 Java + SQLite 的真实后端项目
@@ -138,7 +138,7 @@ monopane/
 │   ├── canvas-schema.md              数据契约（唯一权威）
 │   └── design/                       设计文档归档
 ├── examples/                         Skill 产出的真实画布样本
-└── .trae/skills/project-canvas-gen/  解析 Skill 与自检脚本
+└── .trae/skills/monopane-build/  解析 Skill 与自检脚本
 ```
 
 **职责边界**：跨端复用的逻辑（类型、区域常量、校验、模拟分支、内置示例）一律放在 `packages/canvas`，它不引入任何 React / `@flowgram.ai` 依赖，因此既能在浏览器里配合编辑器工作，也能在 Node 里被 Skill、CI 和单测直接调用；只有渲染与交互留在 `packages/app`。
@@ -149,7 +149,7 @@ monopane/
 
 1. `packages/canvas/src/` 下的类型与逻辑；
 2. `packages/canvas/src/__tests__/invariants.ts` 的布局断言；
-3. `.trae/skills/project-canvas-gen/scripts/validate-canvas.mjs` 的深度校验；
+3. `.trae/skills/monopane-build/scripts/validate-canvas.mjs` 的深度校验；
 4. 一条 changeset。
 
 ## 部署到 GitHub Pages

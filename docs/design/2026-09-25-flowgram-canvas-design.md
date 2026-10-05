@@ -46,7 +46,7 @@
 ```
 
 1. **画布 Schema 规范**（契约）：定义节点类型、端口、连线语义、坐标布局规范。Skill 按它产出，应用按它加载。
-2. **解析 Skill**（`project-canvas-gen`）：输入项目仓库 → 输出符合规范的 canvas JSON。
+2. **解析 Skill**（`monopane-build`）：输入项目仓库 → 输出符合规范的 canvas JSON。
 3. **Web 应用**：FlowGram free-layout 脚手架改造，负责编辑、预览、模拟与所有分享导出。
 
 ## 4. Web 应用设计
@@ -117,7 +117,7 @@ flowgram-diagram/
 │   ├── superpowers/specs/2026-09-25-flowgram-canvas-design.md   # 本文档
 │   └── canvas-schema.md                                        # Schema 契约（Skill 依据）
 ├── .trae/skills/
-│   └── project-canvas-gen/       # 解析 Skill（TRAE Skill，随仓库管理）
+│   └── monopane-build/       # 解析 Skill（TRAE Skill，随仓库管理）
 │       ├── SKILL.md              # 工作流定义
 │       └── scripts/validate-canvas.mjs  # 产物自检脚本
 ├── scripts/
@@ -152,7 +152,7 @@ flowgram-diagram/
 
 ## 6. 解析 Skill 设计
 
-- 名称：`project-canvas-gen`；用 skill-creator 规范创建；代码随本仓库管理，安装到个人技能目录即可在 TRAE 中使用并分享给团队
+- 名称：`monopane-build`；用 skill-creator 规范创建；代码随本仓库管理，安装到个人技能目录即可在 TRAE 中使用并分享给团队
 - 触发方式：「分析项目生成画布」/「generate canvas for this repo」等
 - 输入：本地仓库路径 或 GitHub URL（自动 clone 到临时目录）
 - 分析流程（Skill 内编排为固定工作流）：

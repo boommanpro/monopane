@@ -1,9 +1,9 @@
 ---
-name: 'project-canvas-gen'
-description: '把任意代码仓库解析成「项目文档画布」JSON：数据库 ER、项目架构、代码流程、运行逻辑四区域，可直接导入画布应用查看。当用户说「分析项目生成画布」「给这个仓库生成项目文档」「generate canvas for this repo」「把这个项目的数据库/架构/流程画出来」，或提供了一个本地项目路径 / GitHub URL 想可视化时调用。'
+name: 'monopane-build'
+description: '把任意代码仓库解析成「项目文档画布」JSON：数据库 ER、项目架构、代码流程、运行逻辑四区域，可直接导入画布应用查看，并可构建为可离线双击打开的单体 HTML。当用户说「分析项目生成画布」「给这个仓库生成项目文档」「generate canvas for this repo」「把这个项目的数据库/架构/流程画出来」，或提供了一个本地项目路径 / GitHub URL 想可视化时调用。'
 ---
 
-# 项目文档画布生成器（project-canvas-gen）
+# 项目文档画布生成器（monopane-build）
 
 把一个代码仓库解析成符合 `docs/canvas-schema.md`（Canvas Schema v1.1）的单一 JSON 文件。
 该 JSON 可被「项目文档画布」Web 应用直接导入，渲染为一张带小地图的自由画布。
@@ -15,7 +15,7 @@ description: '把任意代码仓库解析成「项目文档画布」JSON：数�
 
 ## 运行环境（先读）
 
-本 skill 位于 **monopane 仓库**内（`.trae/skills/project-canvas-gen/`）。下文中所有 shell 命令都以 **monopane 仓库根目录**为工作目录，或直接把路径换成绝对路径执行：
+本 skill 位于 **monopane 仓库**内（`.trae/skills/monopane-build/`）。下文中所有 shell 命令都以 **monopane 仓库根目录**为工作目录，或直接把路径换成绝对路径执行：
 
 - 仓库根 `$REPO_ROOT` = 本 skill 文件 `SKILL.md` 向上 3 级目录（含 `.git` 与 `pnpm-workspace.yaml` 的那一层）；
 - 执行前先确认：`cd "$REPO_ROOT"` 可用、且 `node_modules` 已安装（`pnpm install`）；
@@ -99,7 +99,7 @@ description: '把任意代码仓库解析成「项目文档画布」JSON：数�
 
 ```bash
 cd "$REPO_ROOT"
-node .trae/skills/project-canvas-gen/scripts/validate-canvas.mjs <产物路径>
+node .trae/skills/monopane-build/scripts/validate-canvas.mjs <产物路径>
 ```
 
 脚本报错必须修完再交付。脚本通过后，再用 `docs/canvas-schema.md` 第 5 节清单人工复核一遍语义问题（表关联方向、分支端口、是否漏了必填字段）。

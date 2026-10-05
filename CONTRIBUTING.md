@@ -45,7 +45,7 @@ pnpm build          # 双入口构建
 修改数据契约（`docs/canvas-schema.md`、`packages/canvas/src`）时，必须同步更新：
 
 1. `packages/canvas/src/__tests__/invariants.ts` 中的布局断言；
-2. `.trae/skills/project-canvas-gen/scripts/validate-canvas.mjs` 中的深度校验；
+2. `.trae/skills/monopane-build/scripts/validate-canvas.mjs` 中的深度校验；
 3. 一条 changeset：`pnpm changeset`。
 
 ## 分支与提交

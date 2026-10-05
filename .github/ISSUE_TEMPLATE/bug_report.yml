@@ -18,7 +18,7 @@ body:
         - 编辑器（本地 pnpm dev / 在线根路径）
         - 只读预览（/viewer/）
         - 导出（JSON / PNG / 离线 HTML）
-        - 解析 Skill（.trae/skills/project-canvas-gen）
+        - 解析 Skill（.trae/skills/monopane-build）
         - 构建 / CI / 其他
     validations:
       required: true
