@@ -7,8 +7,10 @@
  * 编辑发生在视图上；合并（mergeAreaSlice）负责把视图写回完整文档，
  * 因此切 tab / 暂存 / 导出都不会丢其他区域的内容。
  *
- * 内容类型与 URL path 绑定：`/` 默认展示首个有内容的区域，
- * `/{区域id}`（如 /group-flow）直接打开对应区域，方便把链接嵌入其他位置。
+ * 内容类型与 URL 绑定：`#/` 默认展示首个有内容的区域，
+ * `#/{区域id}`（如 `#/group-flow`）直接打开对应区域，方便把链接嵌入其他位置。
+ * 使用 hash 路由而非 path，保证 GitHub Pages 刷新 / 直达链接可用，
+ * 且导出的单体 HTML（file:// 打开）同样安全。
  *
  * 「是否可模拟运行」（canRun）始终基于编辑器当前展示的内容计算：
  * 当前内容里没有 flow-start 节点时，运行按钮不可用。
@@ -51,9 +53,10 @@ export interface SwitchOptions {
   pushUrl?: boolean;
 }
 
-/** 从当前 URL path 解析目标区域 id（如 /group-flow → group-flow），无匹配返回 null */
-export function resolveAreaIdFromPath(): string | null {
-  const segment = window.location.pathname.split('/').filter(Boolean)[0] ?? '';
+/** 从当前 URL hash 解析目标区域 id（如 `#/group-flow` → group-flow），无匹配返回 null */
+export function resolveAreaIdFromUrl(): string | null {
+  const hash = window.location.hash.replace(/^#/, '');
+  const segment = hash.split('/').filter(Boolean)[0] ?? '';
   if (!segment) {
     return null;
   }
@@ -164,7 +167,7 @@ export class AreaViewStore {
     this.viewVersion += 1;
     this.recompute(this.view);
     if (options?.pushUrl !== false) {
-      window.history.pushState(null, '', `/${target}`);
+      window.location.hash = `/${target}`;
     }
     return this.view;
   }

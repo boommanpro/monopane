@@ -33,7 +33,7 @@ description: '把任意代码仓库解析成「项目文档画布」JSON：数�
 
 **技术栈优先级**：Node.js/TypeScript、Python、Java、Go 优先做深度解析；其他栈同样支持，但按通用启发式降级处理。
 
-## 工作流（固定七步，必须逐条执行）
+## 工作流（固定八步，必须逐条执行）
 
 ### 1. 项目概览
 
@@ -90,6 +90,20 @@ node .trae/skills/project-canvas-gen/scripts/validate-canvas.mjs <产物路径>
 ```
 
 脚本报错必须修完再交付。脚本通过后，再用 `docs/canvas-schema.md` 第 5 节清单人工复核一遍语义问题（表关联方向、分支端口、是否漏了必填字段）。
+
+### 8. 构建单体 HTML（交付时默认执行）
+
+校验通过后用构建脚本把画布 JSON 打成**可离线双击打开的单体 HTML**（JS / CSS / 字体全部内联，不依赖外部网络）：
+
+```bash
+node packages/app/scripts/build-standalone.mjs <产物路径> [<输出.html>]
+```
+
+- 输出路径省略时，与 JSON 同目录、同名 `.html`；
+- 若报「未找到离线模板」，先执行 `pnpm --filter @monopane/app build:viewer` 生成模板再重试；
+- 交付时同时给出 JSON 与 HTML 两个产物路径。
+
+> 应用内「导出离线 HTML」走的是同一套模板与注入逻辑（`src/export/standalone-html.ts`），产物与 CLI 一致。
 
 ## 布局与格式
 
@@ -213,8 +227,9 @@ x = col * 460   y = row * 380
 ## 输出
 
 - 文件写到用户指定位置；未指定则写到**被分析项目的当前目录**下 `<repo-name>-canvas.json`
+- 校验通过后默认额外产出同名的单体 HTML（见第 8 步）
 - 交付时给出：文件路径、各区域节点/连线数量、被截断的内容（若有）
-- 提示用户：在画布应用里点「导入画布 JSON」即可查看（在线版：https://boommanpro.github.io/monopane/ ），之后可导出 PNG / 离线 HTML 分享
+- 提示用户：在画布应用里点「导入画布 JSON」即可查看（在线版：https://boommanpro.github.io/monopane/ ），之后可导出 PNG / 离线 HTML 分享；离线 HTML 产物可直接作为附件发送
 
 ## 常见坑
 

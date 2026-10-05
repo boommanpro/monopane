@@ -21,6 +21,8 @@ monopane is a free-layout canvas app built on [FlowGram](https://flowgram.ai/). 
 
 Both open with a built-in sample (a fictional e-commerce repo). Use **Import canvas JSON** in the top-right toolbar to load your own.
 
+> Area switching uses **hash routing** (e.g. `https://boommanpro.github.io/monopane/#/architecture`), so refresh / deep links work fine on GitHub Pages. Add `?readonly=1` to the URL to open directly in read-only mode (live: `https://boommanpro.github.io/monopane/?readonly=1`).
+
 ## The four areas
 
 The canvas is one free-form surface divided into four fixed areas, each hosted by a group container:
@@ -51,7 +53,11 @@ Area origins, the grid (460 column width / 380 row height), and per-area node ca
 | PNG             | Drop into reports, wikis, issues                                                 |
 | Standalone HTML | **Single file** with JS / CSS / fonts all inlined — double-click to view offline |
 
-The standalone HTML output references no external `script` or `link`, so it can be attached and shared as-is.
+The standalone HTML output references no external `script` or `link`, so it can be attached and shared as-is. You can also build it straight from a canvas JSON file via CLI, without opening the editor:
+
+```bash
+pnpm --filter @monopane/app build:standalone <canvas.json> [output.html]
+```
 
 ### Flow simulation
 
@@ -84,16 +90,17 @@ pnpm dev
 
 ### Common commands
 
-| Command                             | Purpose                                                                       |
-| ----------------------------------- | ----------------------------------------------------------------------------- |
-| `pnpm dev`                          | Build the canvas package and start the editor (`MODE=app` dev server)         |
-| `pnpm build`                        | Build everything: viewer first, then editor, producing `dist` + `dist-viewer` |
-| `pnpm typecheck`                    | `tsc --noEmit` across the workspace                                           |
-| `pnpm lint` / `pnpm lint:fix`       | ESLint check / autofix                                                        |
-| `pnpm format` / `pnpm format:check` | Prettier write / check                                                        |
-| `pnpm test` / `pnpm test:watch`     | Vitest once / in watch mode                                                   |
-| `pnpm changeset`                    | Record a version change                                                       |
-| `pnpm clean`                        | Remove all build artifacts                                                    |
+| Command                             | Purpose                                                                                      |
+| ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| `pnpm dev`                          | Build the canvas package and start the editor (`MODE=app` dev server)                        |
+| `pnpm build`                        | Build everything: viewer first, then editor, producing `dist` + `dist-viewer`                |
+| `pnpm build:standalone`             | CLI standalone HTML build: `pnpm build:standalone <canvas.json> [output.html]` (app package) |
+| `pnpm typecheck`                    | `tsc --noEmit` across the workspace                                                          |
+| `pnpm lint` / `pnpm lint:fix`       | ESLint check / autofix                                                                       |
+| `pnpm format` / `pnpm format:check` | Prettier write / check                                                                       |
+| `pnpm test` / `pnpm test:watch`     | Vitest once / in watch mode                                                                  |
+| `pnpm changeset`                    | Record a version change                                                                      |
+| `pnpm clean`                        | Remove all build artifacts                                                                   |
 
 > Standalone HTML export relies on `packages/app/public/viewer-template.html`, which is a build artifact and not committed. After a fresh clone, run `pnpm --filter @monopane/app build:viewer` once to generate it.
 
@@ -153,6 +160,8 @@ monopane/
 https://<owner>.github.io/<repo>/          ← packages/app/dist        (editor)
 https://<owner>.github.io/<repo>/viewer/   ← packages/app/dist-viewer (viewer)
 ```
+
+Area switching uses hash routing (`#/<area-id>`) and read-only mode is expressed via the querystring (`?readonly=1`), so **refresh / deep links work with zero extra config** (no 404 fallback page needed).
 
 The deployment prefix is injected via `ASSET_PREFIX=/<repo>/` (derived from the repository name in the workflow, so forks need no change). Before the first deployment, set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
 

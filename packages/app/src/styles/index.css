@@ -130,6 +130,36 @@ body {
   flex-direction: column;
 }
 
+/**
+ * 右上角三行工具栏堆叠容器：
+ *   第一行 图形切换栏（AreaTabs）  第二行 工具栏（CanvasToolbar）
+ *   第三行 折叠栏（ToolbarSecondary）
+ * 行组件自带绝对定位样式，在容器内降级为静态布局，实现纵向堆叠。
+ */
+.mp-toolbar-stack {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.mp-toolbar-stack > * {
+  pointer-events: auto;
+}
+
+.mp-toolbar-stack .area-tabs,
+.mp-toolbar-stack .canvas-toolbar,
+.mp-toolbar-stack .canvas-secondary-tools {
+  position: static;
+  top: auto;
+  right: auto;
+}
+
 .demo-tools {
   padding: 10px;
   display: flex;

@@ -19,7 +19,7 @@ import { themeStore } from './theme';
 import { nodeRegistries } from './nodes';
 import { useEditorProps } from './hooks';
 import { getDefaultCanvasDocument } from './data/storage';
-import { AreaTabs, areaViewStore, resolveAreaIdFromPath, useAreaView } from './area-view';
+import { AreaTabs, areaViewStore, resolveAreaIdFromUrl, useAreaView } from './area-view';
 
 function resolveInitialData(): FlowDocumentJSON {
   const injected = window.__CANVAS_DATA__;
@@ -37,7 +37,7 @@ function resolveInitialData(): FlowDocumentJSON {
 themeStore.init();
 
 /** 首次加载：初始化分区视图状态（模块加载时执行一次，避免渲染期副作用） */
-areaViewStore.resetWith(resolveInitialData(), resolveAreaIdFromPath() ?? undefined);
+areaViewStore.resetWith(resolveInitialData(), resolveAreaIdFromUrl() ?? undefined);
 
 export const Viewer = () => {
   // 与编辑器一致的分区视图逻辑：只读模式下同样按内容类型分页展示
@@ -50,7 +50,9 @@ export const Viewer = () => {
   return (
     <FreeLayoutEditorProvider key={`canvas-${viewVersion}`} {...editorProps}>
       <div className="demo-container">
-        <AreaTabs />
+        <div className="mp-toolbar-stack">
+          <AreaTabs />
+        </div>
         <DockedPanelLayer>
           <EditorRenderer className="demo-editor" />
         </DockedPanelLayer>

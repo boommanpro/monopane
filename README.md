@@ -21,6 +21,8 @@ monopane 是一个基于 [FlowGram](https://flowgram.ai/) free-layout 引擎的�
 
 打开后默认加载内置示例（一个虚构电商仓库）。点右上角的「导入画布 JSON」换成你自己的。
 
+> 区域切换使用 **hash 路由**（如 `https://boommanpro.github.io/monopane/#/architecture`），刷新 / 直达链接在 GitHub Pages 下都能用；URL 带 `?readonly=1` 时直接以只读模式打开（在线预览：`https://boommanpro.github.io/monopane/?readonly=1`）。
+
 ## 四大区域
 
 画布是一张自由大画布，被划分为四个固定区域，每个区域由一个分组容器承载：
@@ -51,7 +53,11 @@ monopane 是一个基于 [FlowGram](https://flowgram.ai/) free-layout 引擎的�
 | PNG       | 直接贴进周报、Wiki、Issue                                       |
 | 离线 HTML | **单体文件**，JS / CSS / 字体全部内联，双击即可离线浏览与缩放   |
 
-离线 HTML 的产物不依赖任何外部 `script` / `link`，可以直接当附件发给别人。
+离线 HTML 的产物不依赖任何外部 `script` / `link`，可以直接当附件发给别人。也可以不进编辑器，直接用 CLI 从画布 JSON 构建：
+
+```bash
+pnpm --filter @monopane/app build:standalone <canvas.json> [output.html]
+```
 
 ### 运行逻辑模拟
 
@@ -84,16 +90,17 @@ pnpm dev
 
 ### 常用命令
 
-| 命令                                | 作用                                                        |
-| ----------------------------------- | ----------------------------------------------------------- |
-| `pnpm dev`                          | 构建 canvas 包并启动编辑器（`MODE=app` 开发模式）           |
-| `pnpm build`                        | 构建全部包：先 viewer 后编辑器，产出 `dist` + `dist-viewer` |
-| `pnpm typecheck`                    | 全仓 `tsc --noEmit`                                         |
-| `pnpm lint` / `pnpm lint:fix`       | ESLint 检查 / 自动修复                                      |
-| `pnpm format` / `pnpm format:check` | Prettier 格式化 / 校验                                      |
-| `pnpm test` / `pnpm test:watch`     | Vitest 单测 / 监听模式                                      |
-| `pnpm changeset`                    | 记录一条版本变更                                            |
-| `pnpm clean`                        | 清理全部构建产物                                            |
+| 命令                                | 作用                                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------------------ |
+| `pnpm dev`                          | 构建 canvas 包并启动编辑器（`MODE=app` 开发模式）                                    |
+| `pnpm build`                        | 构建全部包：先 viewer 后编辑器，产出 `dist` + `dist-viewer`                          |
+| `pnpm build:standalone`             | CLI 构建单体 HTML：`pnpm build:standalone <canvas.json> [output.html]`（app 包脚本） |
+| `pnpm typecheck`                    | 全仓 `tsc --noEmit`                                                                  |
+| `pnpm lint` / `pnpm lint:fix`       | ESLint 检查 / 自动修复                                                               |
+| `pnpm format` / `pnpm format:check` | Prettier 格式化 / 校验                                                               |
+| `pnpm test` / `pnpm test:watch`     | Vitest 单测 / 监听模式                                                               |
+| `pnpm changeset`                    | 记录一条版本变更                                                                     |
+| `pnpm clean`                        | 清理全部构建产物                                                                     |
 
 > 导出「离线 HTML」依赖 `packages/app/public/viewer-template.html`。它是构建产物、不入库，全新 clone 后先跑一次 `pnpm --filter @monopane/app build:viewer` 生成模板即可。
 
@@ -153,6 +160,8 @@ monopane/
 https://<owner>.github.io/<repo>/          ← packages/app/dist        （编辑器）
 https://<owner>.github.io/<repo>/viewer/   ← packages/app/dist-viewer （只读预览）
 ```
+
+区域切换使用 hash 路由（`#/区域id`），只读模式通过 querystring（`?readonly=1`）表达，因此**刷新 / 直达链接无需额外配置**（不需要 404 回退页）。
 
 构建时通过环境变量 `ASSET_PREFIX=/<repo>/` 注入部署前缀（工作流里从仓库名推导，fork 后无需改配置）。首次部署前需要在仓库 **Settings → Pages → Build and deployment → Source** 中选择 **GitHub Actions**。
 

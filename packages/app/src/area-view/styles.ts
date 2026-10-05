@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 export const AreaTabsWrap = styled.div`
   position: absolute;
-  top: 64px;
+  top: 16px;
   right: 16px;
   z-index: 19;
   pointer-events: none;

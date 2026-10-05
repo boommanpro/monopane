@@ -4,5 +4,5 @@
 
 export { AreaTabs } from './area-tabs';
 export { useAreaView } from './hooks';
-export { areaViewStore, resolveAreaIdFromPath } from './store';
+export { areaViewStore, resolveAreaIdFromUrl } from './store';
 export type { AreaTabInfo, AreaViewSnapshot, SwitchOptions } from './store';
