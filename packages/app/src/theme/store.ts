@@ -34,6 +34,16 @@ function readStored(): string {
   }
 }
 
+/** 链接主题参数（?theme=dark 等），仅接受合法预设 id；分享链接可携带主题 */
+function readThemeParam(): string | null {
+  try {
+    const value = new URLSearchParams(window.location.search).get('theme');
+    return value && findPreset(value).id === value ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 /** 把预设值映射为 CSS 变量并写到 <html> */
 function applyVars(preset: ThemePreset): void {
   const root = document.documentElement;
@@ -74,6 +84,10 @@ function applyVars(preset: ThemePreset): void {
     '--mp-minimap-viewport-border': preset.minimapViewportBorder,
     '--mp-minimap-node': preset.minimapNode,
     '--mp-minimap-overlay': preset.minimapOverlay,
+    '--mp-canvas-dot': preset.canvasDot,
+    '--mp-edge-db-relation': preset.edgeDbRelation,
+    '--mp-edge-dependency': preset.edgeDependency,
+    '--mp-edge-flow': preset.edgeFlow,
   };
   Object.entries(vars).forEach(([key, value]) => root.style.setProperty(key, value));
 }
@@ -107,9 +121,14 @@ export class ThemeStore {
     return this.presetId;
   }
 
-  /** 启动：应用当前预设并开始跟随系统（如需） */
+  /** 启动：应用当前预设并开始跟随系统（如需）；支持 ?theme= 链接参数覆盖 */
   public init(): void {
-    this.apply();
+    const fromUrl = readThemeParam();
+    if (fromUrl) {
+      this.setPreset(fromUrl);
+    } else {
+      this.apply();
+    }
     this.systemQuery = window.matchMedia('(prefers-color-scheme: dark)');
     this.systemQuery.addEventListener('change', () => {
       if (this.presetId === FOLLOW_SYSTEM) {

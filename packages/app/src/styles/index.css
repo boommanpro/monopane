@@ -23,6 +23,12 @@
   --mp-minimap-viewport-border: rgba(6, 7, 9, 0.1);
   --mp-minimap-node: rgba(0, 0, 0, 0.1);
   --mp-minimap-overlay: rgba(255, 255, 255, 0.55);
+  --mp-canvas-dot: rgba(15, 23, 42, 0.1);
+  --mp-edge-db-relation: #d97706;
+  --mp-edge-dependency: #7c5cff;
+  --mp-edge-flow: #059669;
+  /* 等宽字体栈：贯穿卡片标题 / 图例 / 连线标签 / 顶栏 */
+  --mp-font-mono: ui-monospace, 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
 
   /* Port colors */
   --g-workflow-port-color-primary: #4d53e8;
@@ -42,19 +48,26 @@
 
 /**
  * 连线上的标签（表关联类型 / 依赖说明 / 分支名）
+ * 文字色跟随连线语义色，白底垫保证交叉处可读。
+ * border 拆三条独立声明：shorthand 内的 color-mix() 含逗号会解析失败
  */
 .canvas-line-label {
   position: absolute;
   top: 0;
   left: 0;
-  padding: 2px 6px;
+  padding: 2px 7px;
   border-radius: 6px;
+  font-family: var(--mp-font-mono);
   font-size: 11px;
+  font-weight: 600;
   line-height: 16px;
   white-space: nowrap;
-  color: var(--mp-card-title);
+  color: var(--mp-label-color, var(--mp-card-title));
   background-color: var(--mp-card-bg);
-  border: 1px solid var(--mp-toolbar-border);
+  border-width: 1px;
+  border-style: solid;
+  border-color: color-mix(in srgb, var(--mp-label-color, var(--mp-card-title)) 32%, transparent);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   pointer-events: none;
 }
 
@@ -202,4 +215,54 @@ body {
 [data-theme='dark'] .gedit-playground-scroll-right-block,
 [data-theme='dark'] .gedit-playground-scroll-bottom-block {
   background-color: rgba(255, 255, 255, 0.25);
+}
+
+/**
+ * 画布点阵网格背景：跟随主题 --mp-canvas-dot，
+ * 叠加在 FlowGram 画布底色之上形成制图氛围
+ */
+.gedit-playground {
+  background-image: radial-gradient(var(--mp-canvas-dot) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+
+/**
+ * viewer 布局：顶部标题栏 + 弹性画布区
+ */
+.mp-viewer {
+  flex-direction: column;
+}
+
+.mp-viewer .mp-editor-area {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+/* viewer 顶栏内的区域 Tab：由绝对定位降级为内联（保持 AreaTabs 自身样式不变） */
+.mp-header-tabs .area-tabs {
+  position: static;
+  max-width: 100%;
+}
+
+.mp-header-tabs .area-tabs > div {
+  box-shadow: none;
+  height: 32px;
+}
+
+/**
+ * 图例过滤：非匹配节点淡化（区域容器与连线不参与）
+ */
+.mp-node-wrapper.mp-legend-dim {
+  opacity: 0.18;
+  filter: saturate(0.4);
+}
+
+/**
+ * 阅读深度（zoom band）：
+ * map（<45%）只保留标题，描述 / 字段列表 / 技术标签隐藏；
+ * full（≥140%）全部展示（当前默认即全量，档位预留渐进增强）
+ */
+[data-zoom-band='map'] .mp-node-wrapper .mp-node-detail {
+  display: none !important;
 }

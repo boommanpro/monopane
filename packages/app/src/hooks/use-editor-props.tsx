@@ -25,6 +25,10 @@ import { FlowNodeRegistry, FlowDocumentJSON } from '../typings';
 import { useTheme } from '../theme';
 import { simulationService } from '../simulation';
 import { shortcuts } from '../shortcuts';
+import {
+  attachEdgeSemanticColors,
+  refreshEdgeSemanticColors,
+} from '../services/line-style-service';
 import { CustomService, ValidateService } from '../services';
 import { createContextMenuPlugin, createPanelManagerPlugin } from '../plugins';
 import { timestampedFilename } from '../export/download';
@@ -170,6 +174,8 @@ export function useEditorProps(
         if (!areaViewStore.isCurrentDocument(ctx.document)) return;
         const full = areaViewStore.mergeCurrentView(ctx.document.toJSON() as FlowDocumentJSON);
         saveCanvasDocument(full);
+        // 新增连线补充语义分色（幂等：已锁定的连线重复赋值无副作用）
+        refreshEdgeSemanticColors(ctx);
       }, 1000),
       /**
        * 流动线：模拟执行器或探索演示模式决定
@@ -183,12 +189,13 @@ export function useEditorProps(
       },
       /**
        * 首次渲染完成后：登记当前画布 document（供暂存归属校验），对齐视口，
-       * 并解析深链 hash（#node-<id>）定位聚焦节点
+       * 应用连线语义分色，并解析深链 hash（#node-<id> / #focus=<id>）定位聚焦节点
        */
       onAllLayersRendered(ctx) {
         areaViewStore.attachDocument(ctx.document);
         ctx.tools.fitView(false);
-        const match = window.location.hash.match(/^#node-(.+)$/);
+        attachEdgeSemanticColors(ctx);
+        const match = window.location.hash.match(/^#(?:node-|focus=)(.+)$/);
         if (!match) {
           return;
         }

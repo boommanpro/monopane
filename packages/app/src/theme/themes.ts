@@ -44,13 +44,19 @@ export interface ThemePreset {
   minimapNode: string;
   minimapOverlay: string;
   selectBoxBackground: string;
+  /** 画布点阵网格背景色（透明度自带） */
+  canvasDot: string;
+  /** 连线语义色：按 edge kind 分色（数据库关系 / 依赖 / 控制流） */
+  edgeDbRelation: string;
+  edgeDependency: string;
+  edgeFlow: string;
 }
 
 export const LIGHT_THEME: ThemePreset = {
   id: 'light',
   label: '浅色',
   mode: 'light',
-  canvasBg: '#f2f3f5',
+  canvasBg: '#f7f6f3',
   selection: '#4d53e8',
   lineDefault: '#4d53e8',
   lineDrawing: '#5dd6e3',
@@ -78,6 +84,10 @@ export const LIGHT_THEME: ThemePreset = {
   minimapNode: 'rgba(0, 0, 0, 0.10)',
   minimapOverlay: 'rgba(255, 255, 255, 0.55)',
   selectBoxBackground: 'rgba(141, 144, 231, 0.1)',
+  canvasDot: 'rgba(30, 35, 48, 0.13)',
+  edgeDbRelation: '#d97706',
+  edgeDependency: '#7c5cff',
+  edgeFlow: '#059669',
 };
 
 export const DARK_THEME: ThemePreset = {
@@ -112,6 +122,10 @@ export const DARK_THEME: ThemePreset = {
   minimapNode: 'rgba(255, 255, 255, 0.16)',
   minimapOverlay: 'rgba(0, 0, 0, 0.35)',
   selectBoxBackground: 'rgba(109, 115, 255, 0.16)',
+  canvasDot: 'rgba(148, 163, 184, 0.14)',
+  edgeDbRelation: '#f59e0b',
+  edgeDependency: '#a78bfa',
+  edgeFlow: '#34d399',
 };
 
 /** 深海蓝（暗色） */

@@ -19,6 +19,7 @@ import { themeStore } from './theme';
 import { nodeRegistries } from './nodes';
 import { useEditorProps } from './hooks';
 import { getDefaultCanvasDocument } from './data/storage';
+import { CanvasOverlays, ViewerHeader } from './components';
 import { AreaTabs, areaViewStore, resolveAreaIdFromUrl, useAreaView } from './area-view';
 
 function resolveInitialData(): FlowDocumentJSON {
@@ -41,21 +42,34 @@ areaViewStore.resetWith(resolveInitialData(), resolveAreaIdFromUrl() ?? undefine
 
 export const Viewer = () => {
   // 与编辑器一致的分区视图逻辑：只读模式下同样按内容类型分页展示
-  const { viewVersion } = useAreaView();
+  const { viewVersion, tabs, activeKey } = useAreaView();
   const viewData = useMemo(() => areaViewStore.getViewDocument(), [viewVersion]);
   const editorProps = useEditorProps(viewData, nodeRegistries, {
     readonly: true,
   });
 
+  // 顶部标题栏：活跃区域名 + 当前视图规模
+  const activeTitle = tabs.find((tab) => tab.key === activeKey)?.title ?? '项目文档画布';
+  const meta = `${viewData.nodes.length} 节点 · ${viewData.edges.length} 连线`;
+
   return (
     <FreeLayoutEditorProvider key={`canvas-${viewVersion}`} {...editorProps}>
-      <div className="demo-container">
-        <div className="mp-toolbar-stack">
-          <AreaTabs />
+      <div className="demo-container mp-viewer">
+        <ViewerHeader
+          title={activeTitle}
+          meta={meta}
+          center={
+            <div className="mp-header-tabs">
+              <AreaTabs />
+            </div>
+          }
+        />
+        <CanvasOverlays readonly />
+        <div className="mp-editor-area">
+          <DockedPanelLayer>
+            <EditorRenderer className="demo-editor" />
+          </DockedPanelLayer>
         </div>
-        <DockedPanelLayer>
-          <EditorRenderer className="demo-editor" />
-        </DockedPanelLayer>
       </div>
     </FreeLayoutEditorProvider>
   );

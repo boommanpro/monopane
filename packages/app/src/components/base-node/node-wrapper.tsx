@@ -10,6 +10,7 @@ import { useClientContext } from '@flowgram.ai/free-layout-editor';
 
 import { FlowNodeMeta } from '../../typings';
 import { useNodeFormPanel } from '../../plugins/panel-manager-plugin/hooks';
+import { legendKeyOf, resolveNodeAccent } from '../../nodes/shared/accent';
 import { useNodeRenderContext, usePortClick } from '../../hooks';
 import { useExploreClass } from '../../explore/use-explore-class';
 import { scrollToView } from './utils';
@@ -43,11 +44,15 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = (props) => {
   // 探索高亮 class（focus / reachable / path / dim），空串不高亮
   const exploreClass = useExploreClass(node.id);
   const exploreClassName = exploreClass ? `explore-${exploreClass}` : '';
+  // 语义强调色：驱动卡片描边 / 投影 / 选中光晕（架构组件按 category 细分）
+  const accent = resolveNodeAccent(node);
 
   return (
     <>
       <NodeWrapperStyle
-        className={[selected ? 'selected' : '', exploreClassName].filter(Boolean).join(' ')}
+        className={['mp-node-wrapper', selected ? 'selected' : '', exploreClassName]
+          .filter(Boolean)
+          .join(' ')}
         ref={nodeRef}
         draggable
         onDragStart={(e) => {
@@ -75,10 +80,16 @@ export const NodeWrapper: React.FC<NodeWrapperProps> = (props) => {
         onFocus={onFocus}
         onBlur={onBlur}
         data-node-selected={String(selected)}
-        style={{
-          ...meta.wrapperStyle,
-          outline: form?.state.invalid ? '1px solid red' : 'none',
-        }}
+        data-node-type={node.flowNodeType}
+        data-node-accent={accent}
+        data-legend-key={legendKeyOf(node)}
+        style={
+          {
+            ...meta.wrapperStyle,
+            '--mp-node-accent': accent,
+            outline: form?.state.invalid ? '1px solid red' : 'none',
+          } as React.CSSProperties
+        }
       >
         {children}
       </NodeWrapperStyle>

@@ -13,7 +13,8 @@ export const CardSection = styled.div`
   width: 100%;
 `;
 
-export const FieldList = styled.div`
+/** 字段列表（db-table 等）：zoom map 档隐藏 */
+export const FieldList = styled.div.attrs({ className: 'mp-node-detail' })`
   max-height: 276px;
   overflow-y: auto;
   border: 1px solid var(--mp-field-row-border);
@@ -84,7 +85,8 @@ export const FlagTag = styled.span<{ $tone: 'pk' | 'fk' | 'unique' | 'null' }>`
   }};
 `;
 
-export const Muted = styled.div`
+/** 描述文字：zoom map 档隐藏 */
+export const Muted = styled.div.attrs({ className: 'mp-node-detail' })`
   font-size: 12px;
   line-height: 18px;
   color: var(--semi-color-text-2);
@@ -92,7 +94,8 @@ export const Muted = styled.div`
   white-space: pre-wrap;
 `;
 
-export const TagList = styled.div`
+/** 技术标签列表：zoom map 档隐藏 */
+export const TagList = styled.div.attrs({ className: 'mp-node-detail' })`
   display: flex;
   flex-wrap: wrap;
   gap: 4px;

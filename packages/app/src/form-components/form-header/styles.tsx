@@ -25,7 +25,10 @@ export const Header = styled.div<{ $accent?: string }>`
 `;
 
 export const Title = styled.div`
-  font-size: 20px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--mp-font-mono);
+  letter-spacing: 0.01em;
   flex: 1;
   width: 0;
 `;

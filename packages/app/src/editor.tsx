@@ -15,6 +15,7 @@ import { themeStore } from './theme';
 import { nodeRegistries } from './nodes';
 import { useEditorProps } from './hooks';
 import { loadCanvasDocument } from './data/storage';
+import { CanvasOverlays } from './components';
 import { AreaTabs, areaViewStore, resolveAreaIdFromUrl, useAreaView } from './area-view';
 
 /** 首次加载：应用持久化的主题预设（含跟随系统模式） */
@@ -38,6 +39,7 @@ export const Editor = () => {
           <CanvasToolbar />
           <ToolbarSecondary />
         </div>
+        <CanvasOverlays />
         <DockedPanelLayer>
           <EditorRenderer className="demo-editor" />
         </DockedPanelLayer>
