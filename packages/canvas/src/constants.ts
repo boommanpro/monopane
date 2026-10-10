@@ -57,9 +57,9 @@ export const AREAS: readonly AreaSpec[] = [
     title: '代码流程',
     color: 'Green',
     origin: { x: 0, y: 5600 },
-    columns: 3,
+    columns: 14,
     limit: 20,
-    fillOrder: '从入口开始按流向顺序',
+    fillOrder: '拓扑分层：列 = 流程深度（入口第 0 列），主路径一条直线（row 0），分支按深度下挂',
   },
   {
     id: 'group-runtime',

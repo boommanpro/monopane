@@ -17,6 +17,7 @@ import { HEADER_HEIGHT, HEADER_PADDING } from '../constant';
 import { UngroupButton } from './ungroup';
 import { GroupTools } from './tools';
 import { GroupTips } from './tips';
+import { GroupStageAxis } from './stage-axis';
 import { GroupHeader } from './header';
 import { GroupBackground } from './background';
 
@@ -67,6 +68,7 @@ export const GroupNodeRender = () => {
           </GroupHeader>
           <GroupTips />
           <UngroupButton node={node} />
+          <GroupStageAxis node={node} revision={width} />
           <GroupBackground
             node={node}
             selected={selected}

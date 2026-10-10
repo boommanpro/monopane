@@ -194,6 +194,18 @@ export function useEditorProps(
       onAllLayersRendered(ctx) {
         areaViewStore.attachDocument(ctx.document);
         ctx.tools.fitView(false);
+        // 阅读档下限：流程区横向较长，fitView 会缩到文字不可读；
+        // 缩放低于 0.55 时改用 0.6 并定位到内容区（横向滚动阅读）
+        if ((ctx.playground.config.zoom ?? 1) < 0.55) {
+          const nodes = ctx.document.getAllNodes();
+          if (nodes.length > 0) {
+            void ctx.playground.scrollToView({
+              entities: nodes,
+              zoom: 0.6,
+              scrollToCenter: false,
+            });
+          }
+        }
         attachEdgeSemanticColors(ctx);
         const match = window.location.hash.match(/^#(?:node-|focus=)(.+)$/);
         if (!match) {

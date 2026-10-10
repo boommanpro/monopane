@@ -236,6 +236,18 @@ export const ToolbarSecondary = () => {
     }
   };
 
+  /** 主路径高亮开关（入口 → 完成的快乐路径） */
+  const handleMainPathToggle = () => {
+    if (exploreSnapshot.pathMode) {
+      exploreService.clear();
+      return;
+    }
+    const ok = exploreService.highlightMainPath(ctx);
+    if (!ok) {
+      Toast.warning({ content: '当前内容没有流程起点（flow-start），无法推导主路径' });
+    }
+  };
+
   const handleRestoreDefault = () => {
     clearCanvasDocument();
     applyDocument(getDefaultCanvasDocument(), '已恢复内置示例');
@@ -453,6 +465,14 @@ export const ToolbarSecondary = () => {
                   }}
                 >
                   {demoActive ? '停止演示（按层推进）' : '演示流程（按层推进）'}
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => {
+                    setMoreVisible(false);
+                    handleMainPathToggle();
+                  }}
+                >
+                  {exploreSnapshot.pathMode ? '关闭主路径高亮' : '主路径高亮（入口 → 完成）'}
                 </Dropdown.Item>
                 <Divider layout="vertical" style={{ height: '16px' }} margin={3} />
                 <Dropdown.Item

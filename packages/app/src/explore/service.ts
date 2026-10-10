@@ -8,6 +8,7 @@
 import {
   collectReachability,
   findFlowLayerOrder,
+  findMainFlowPath,
   findPathBetween,
   type CanvasDocumentJSON,
   type FlowLayerStep,
@@ -103,16 +104,26 @@ export class ExploreService {
     this.emit();
   }
 
-  /** 从实时实体构建图数据（只保留探索算法需要的字段） */
+  /** 从实时实体构建图数据（只保留探索算法需要的字段；decision 带默认分支） */
   private buildGraph(ctx: FreeLayoutPluginContext): CanvasDocumentJSON {
-    const nodes = ctx.document
-      .getAssociatedNodes()
-      .map((node) => ({ id: node.id, type: node.flowNodeType }));
+    const nodes = ctx.document.getAssociatedNodes().map((node) => {
+      const data =
+        node.flowNodeType === 'flow-decision'
+          ? {
+              defaultBranch: node
+                .getData(FlowNodeFormData)
+                .getFormModel<FormModelV2>()
+                ?.getValueIn?.('defaultBranch'),
+            }
+          : undefined;
+      return { id: node.id, type: node.flowNodeType, data };
+    });
     const edges = ctx.document.linesManager
       .getAllLines()
       .map((line) => ({
         sourceNodeID: line.from?.id ?? '',
         targetNodeID: line.to?.id ?? '',
+        sourcePortID: line.info?.fromPort,
       }))
       .filter((edge) => edge.sourceNodeID && edge.targetNodeID);
     return { nodes, edges } as CanvasDocumentJSON;
@@ -173,6 +184,29 @@ export class ExploreService {
     });
   }
 
+  /** 高亮主路径：主路径节点保持高亮、其余变暗、路径连线流动；无 flow-start 时返回 false */
+  public highlightMainPath(ctx: FreeLayoutPluginContext): boolean {
+    const mainPath = findMainFlowPath(this.buildGraph(ctx));
+    if (mainPath.length === 0) {
+      return false;
+    }
+    const pathSet = new Set(mainPath);
+    const pathEdgeKeys: string[] = [];
+    for (let i = 0; i + 1 < mainPath.length; i++) {
+      pathEdgeKeys.push(`${mainPath[i]}->${mainPath[i + 1]}`);
+    }
+    const dim = this.allNodeIds(ctx).filter((id) => !pathSet.has(id));
+    this.update({
+      focusId: mainPath[mainPath.length - 1],
+      pathMode: true,
+      pathNodeIds: mainPath,
+      reachableNodeIds: [],
+      dimNodeIds: dim,
+      pathEdgeKeys,
+    });
+    return true;
+  }
+
   /** 启动演示模式：按层遍历 flow-start 出发的流程；无起点时返回 false */
   public demoStart(ctx: FreeLayoutPluginContext): boolean {
     const steps = findFlowLayerOrder(this.buildGraph(ctx));
@@ -206,11 +240,12 @@ export class ExploreService {
 
   /** 连线是否为探索 / 演示需要流动高亮的线 */
   public isFlowingLine(line: WorkflowLineEntity): boolean {
-    if (!this.snapshot.demo) {
-      return false;
-    }
     const key = `${line.from?.id}->${line.to?.id}`;
-    return (this.snapshot.demoSteps[this.snapshot.demoLayerIndex]?.edgeKeys ?? []).includes(key);
+    if (this.snapshot.demo) {
+      return (this.snapshot.demoSteps[this.snapshot.demoLayerIndex]?.edgeKeys ?? []).includes(key);
+    }
+    // 路径探查 / 主路径模式下，路径上的连线持续流动
+    return this.snapshot.pathMode && this.snapshot.pathEdgeKeys.includes(key);
   }
 }
 

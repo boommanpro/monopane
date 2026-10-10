@@ -15,6 +15,7 @@ import { EditorRenderer, FreeLayoutEditorProvider } from '@flowgram.ai/free-layo
 import '@flowgram.ai/free-layout-editor/index.css';
 import './styles/index.css';
 import type { FlowDocumentJSON } from './typings';
+import { ViewerTools } from './toolbar/viewer-tools';
 import { themeStore } from './theme';
 import { nodeRegistries } from './nodes';
 import { useEditorProps } from './hooks';
@@ -46,6 +47,7 @@ export const Viewer = () => {
   const viewData = useMemo(() => areaViewStore.getViewDocument(), [viewVersion]);
   const editorProps = useEditorProps(viewData, nodeRegistries, {
     readonly: true,
+    layerChildren: <ViewerTools />,
   });
 
   // 顶部标题栏：活跃区域名 + 当前视图规模

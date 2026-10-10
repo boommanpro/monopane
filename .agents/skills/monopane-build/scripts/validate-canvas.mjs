@@ -68,7 +68,7 @@ const REGIONS = {
     title: '代码流程',
     color: 'Green',
     origin: { x: 0, y: 5600 },
-    columns: 3,
+    columns: 14,
     limit: 20,
   },
   'group-runtime': {

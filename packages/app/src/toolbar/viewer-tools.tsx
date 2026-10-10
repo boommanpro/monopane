@@ -8,6 +8,7 @@ import { ZoomSelect } from '../components/tools/zoom-select';
 import { ToolContainer, ToolSection } from '../components/tools/styles';
 import { MinimapSwitch } from '../components/tools/minimap-switch';
 import { Minimap } from '../components/tools/minimap';
+import { MainPathToggle } from '../components/tools/main-path';
 import { Interactive } from '../components/tools/interactive';
 import { FitView } from '../components/tools/fit-view';
 
@@ -20,6 +21,7 @@ export const ViewerTools = () => {
         <Interactive />
         <ZoomSelect />
         <FitView />
+        <MainPathToggle />
         <MinimapSwitch minimapVisible={minimapVisible} setMinimapVisible={setMinimapVisible} />
         <Minimap visible={minimapVisible} />
       </ToolSection>

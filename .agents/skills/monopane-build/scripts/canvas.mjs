@@ -45,7 +45,7 @@ const AREAS = {
     title: '代码流程',
     color: 'Green',
     origin: { x: 0, y: 5600 },
-    columns: 3,
+    columns: 14,
     limit: 20,
   },
   'group-runtime': {
@@ -107,7 +107,9 @@ function usage() {
       生成画布骨架。默认建 db/arch/flow/runtime 四个区域（代码仓库模式）；
       --all 等价于 --areas 全量；--title 自定义区域标题（如 --title flow=核心流程）。
   layout <canvas.json>
-      自动布局：按 blockIDs 顺序给每个子节点分配网格坐标（已有 meta.position 的不动）；
+      自动布局（已有 meta.position 的不动）：
+      flow 区域按拓扑分层——列 = 流程深度、主路径一条直线（row 0）、分支按深度下挂；
+      其余区域按 blockIDs 顺序行优先填充网格。
       子节点可写 data.slot: "group-flow" 代替手工填 blockIDs，缺失的区域容器自动补建。
   validate <canvas.json>
       深度校验（结构、字段、连线、启发式防呆），交付唯一门槛。
@@ -208,6 +210,151 @@ function cmdInit(args) {
 // layout
 // ---------------------------------------------------------------------------
 
+/**
+ * 流程区拓扑布局（与 packages/canvas/src/graph.ts 的 layoutFlowByTopology 同步）：
+ * 1. Kahn 分层：col = 最长路径深度（flow-start 第 0 列）
+ * 2. 主路径（decision 按 defaultBranch、其余按距 flow-end 最近）全部占 row 0，一条水平直线
+ * 3. 其余节点按到主路径的无向 BFS 距离下挂（一级分支 row 1，二级 row 2…）
+ * 4. 同格冲突向下顺延；环内节点回退顺序占位
+ */
+function layoutFlowGrid(children, edges, report) {
+  const byId = new Map(children.map((node) => [node.id, node]));
+  const idSet = new Set(children.map((node) => node.id));
+  const flowEdges = edges.filter(
+    (edge) =>
+      edge?.data?.kind === 'flow' && idSet.has(edge.sourceNodeID) && idSet.has(edge.targetNodeID)
+  );
+  const out = new Map();
+  const inn = new Map();
+  for (const edge of flowEdges) {
+    if (!out.has(edge.sourceNodeID)) out.set(edge.sourceNodeID, []);
+    out.get(edge.sourceNodeID).push(edge);
+    if (!inn.has(edge.targetNodeID)) inn.set(edge.targetNodeID, []);
+    inn.get(edge.targetNodeID).push(edge);
+  }
+
+  // Kahn 拓扑 + 最长路径分层
+  const level = new Map();
+  const indegree = new Map(children.map((node) => [node.id, inn.get(node.id)?.length ?? 0]));
+  const queue = children.filter((node) => (indegree.get(node.id) ?? 0) === 0).map((n) => n.id);
+  queue.forEach((id) => level.set(id, 0));
+  while (queue.length) {
+    const current = queue.shift();
+    for (const edge of out.get(current) ?? []) {
+      const next = edge.targetNodeID;
+      level.set(next, Math.max(level.get(next) ?? 0, (level.get(current) ?? 0) + 1));
+      const remain = (indegree.get(next) ?? 0) - 1;
+      indegree.set(next, remain);
+      if (remain === 0) queue.push(next);
+    }
+  }
+  const cyclic = children.filter((node) => !level.has(node.id)).map((n) => n.id);
+  if (cyclic.length) {
+    report.push(`警告：flow 区域存在环（${cyclic.join('、')}），环内节点按顺序回退占位`);
+  }
+
+  // 主路径推导
+  const mainPath = [];
+  const startNode = children.find((node) => node?.type === 'flow-start');
+  if (startNode) {
+    const endNode = children.find((node) => node?.type === 'flow-end');
+    const distToEnd = new Map();
+    if (endNode) {
+      distToEnd.set(endNode.id, 0);
+      const bfs = [endNode.id];
+      while (bfs.length) {
+        const current = bfs.shift();
+        for (const edge of inn.get(current) ?? []) {
+          const prev = edge.sourceNodeID;
+          if (!distToEnd.has(prev)) {
+            distToEnd.set(prev, distToEnd.get(current) + 1);
+            bfs.push(prev);
+          }
+        }
+      }
+    }
+    const visited = new Set([startNode.id]);
+    mainPath.push(startNode.id);
+    let cursor = startNode.id;
+    for (let guard = 0; guard <= children.length; guard++) {
+      const outs = out.get(cursor) ?? [];
+      if (!outs.length) break;
+      const node = byId.get(cursor);
+      let next;
+      if (node?.type === 'flow-decision' && node.data?.defaultBranch) {
+        next = outs.find((edge) => edge.sourcePortID === node.data?.defaultBranch)?.targetNodeID;
+      }
+      if (!next) {
+        const ranked = [...outs].sort(
+          (a, b) =>
+            (distToEnd.get(a.targetNodeID) ?? Infinity) -
+            (distToEnd.get(b.targetNodeID) ?? Infinity)
+        );
+        next = ranked[0]?.targetNodeID;
+      }
+      if (!next || visited.has(next)) break;
+      mainPath.push(next);
+      visited.add(next);
+      if (endNode && next === endNode.id) break;
+      cursor = next;
+    }
+  }
+
+  // 无向 BFS：到主路径的距离
+  const undirected = new Map();
+  const link = (a, b) => {
+    if (!undirected.has(a)) undirected.set(a, []);
+    undirected.get(a).push(b);
+  };
+  for (const edge of flowEdges) {
+    link(edge.sourceNodeID, edge.targetNodeID);
+    link(edge.targetNodeID, edge.sourceNodeID);
+  }
+  const depth = new Map(mainPath.map((id) => [id, 0]));
+  let frontier = [...mainPath];
+  while (frontier.length) {
+    const next = [];
+    for (const id of frontier) {
+      for (const neighbor of undirected.get(id) ?? []) {
+        if (!depth.has(neighbor)) {
+          depth.set(neighbor, depth.get(id) + 1);
+          next.push(neighbor);
+        }
+      }
+    }
+    frontier = next;
+  }
+
+  // 网格分配（跳过已有坐标的节点；同格向下顺延）
+  const occupied = new Set();
+  const grid = new Map();
+  const place = (id, col, row) => {
+    let r = row;
+    while (occupied.has(`${col},${r}`)) r += 1;
+    occupied.add(`${col},${r}`);
+    grid.set(id, { col, row: r });
+  };
+  for (const child of children) {
+    const pos = child.meta?.position;
+    if (pos && pos.x % COL_WIDTH === 0 && pos.y % ROW_HEIGHT === 0 && pos.x >= 0 && pos.y >= 0) {
+      occupied.add(`${pos.x / COL_WIDTH},${pos.y / ROW_HEIGHT}`);
+    }
+  }
+  mainPath.forEach((id) => {
+    if (level.has(id)) place(id, level.get(id), 0);
+  });
+  for (const child of children) {
+    if (grid.has(child.id) || !level.has(child.id)) continue;
+    place(child.id, level.get(child.id), depth.get(child.id) ?? 0);
+  }
+  let fallbackRow = Math.max(0, ...Array.from(grid.values()).map((p) => p.row)) + 1;
+  for (const id of cyclic) {
+    place(id, 0, fallbackRow);
+    fallbackRow += 1;
+  }
+  return { grid, mainPath };
+}
+
 function cmdLayout(file) {
   if (!file) fail('layout 需要 <canvas.json> 参数');
   const doc = loadDoc(file);
@@ -271,13 +418,37 @@ function cmdLayout(file) {
     );
   }
 
-  // 布点：每组按 blockIDs 顺序行优先扫描，跳过已占用的格子
+  const allGroups = groups.concat(created.map((slot) => bySlot.get(slot)));
+  const reports = [];
   let assigned = 0;
-  for (const group of groups.concat(created.map((slot) => bySlot.get(slot)))) {
+
+  // 布点：flow 区域按拓扑分层（列 = 流程深度，主路径直线，分支下挂）；其余区域行优先
+  for (const group of allGroups) {
     const spec = AREAS[group.id];
     const children = (group.data?.blockIDs ?? [])
       .map((id) => doc.nodes.find((n) => n?.id === id))
       .filter(Boolean);
+
+    if (group.id === 'group-flow' && children.some((child) => !child.meta?.position)) {
+      const { grid, mainPath } = layoutFlowGrid(children, doc.edges ?? [], reports);
+      for (const child of children) {
+        if (child.meta?.position) continue;
+        const cell = grid.get(child.id);
+        if (!cell) continue;
+        child.meta = {
+          ...(child.meta ?? {}),
+          position: { x: cell.col * COL_WIDTH, y: cell.row * ROW_HEIGHT },
+        };
+        assigned++;
+      }
+      reports.push(
+        `flow 区域拓扑布局：${grid.size} 节点分层完成，主路径 ${mainPath.length} 步（${
+          mainPath[0] ?? '-'
+        } → ${mainPath[mainPath.length - 1] ?? '-'}）`
+      );
+      continue;
+    }
+
     const occupied = new Set();
     for (const child of children) {
       const pos = child.meta?.position;
@@ -315,7 +486,7 @@ function cmdLayout(file) {
   }
 
   saveDoc(file, doc);
-  const stats = groups.concat(created.map((slot) => bySlot.get(slot))).map((group) => {
+  const stats = allGroups.map((group) => {
     const ids = group.data?.blockIDs ?? [];
     const count = ids.filter((id) => doc.nodes.find((n) => n?.id === id)?.type !== 'note').length;
     return `${group.data?.title ?? group.id} ${count}/${AREAS[group.id]?.limit ?? '?'}`;
@@ -323,6 +494,7 @@ function cmdLayout(file) {
   if (created.length) console.log(`[canvas] 自动补建区域容器：${created.join('、')}`);
   if (rewired) console.log(`[canvas] 按 data.slot 自动归区 ${rewired} 个节点`);
   console.log(`[canvas] 已分配坐标 ${assigned} 个（手工坐标保持不变）`);
+  reports.forEach((line) => console.log(`[canvas] ${line}`));
   console.log(`[canvas] 区域用量：${stats.join('　')}`);
   console.log('[canvas] 下一步：node canvas.mjs validate ' + file);
 }
