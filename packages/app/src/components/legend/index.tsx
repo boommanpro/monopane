@@ -6,12 +6,13 @@
  * - 需要挂载在 FreeLayoutEditorProvider 内部（读取画布 document）
  */
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 
 import styled from 'styled-components';
 import { CanvasNodeType } from '@monopane/canvas';
 import { useClientContext } from '@flowgram.ai/free-layout-editor';
 
+import { canvasReadyStore } from '../../services/canvas-ready-store';
 import { legendKeyOf, resolveNodeAccent } from '../../nodes/shared/accent';
 import { ARCH_CATEGORIES } from '../../nodes/arch-component';
 import { nodeRegistries } from '../../nodes';
@@ -99,6 +100,11 @@ export const CanvasLegend = () => {
   const ctx = useClientContext();
   const wrapRef = useRef<HTMLDivElement>(null);
   const [filterKey, setFilterKey] = useState<string | null>(null);
+  // 画布节点是异步挂载的：onAllLayersRendered 时 bump 版本，此处据此重算统计
+  const readyVersion = useSyncExternalStore(
+    canvasReadyStore.subscribe,
+    canvasReadyStore.getVersion
+  );
 
   // 统计当前画布的节点类型（排除区域容器 group；其余类型都计入）
   const items = useMemo<LegendItem[]>(() => {
@@ -132,7 +138,7 @@ export const CanvasLegend = () => {
         count: countByKey.get(key) ?? 0,
       }))
       .filter((item) => item.count > 0);
-  }, [ctx]);
+  }, [ctx, readyVersion]);
 
   // 过滤：给 DOM 中非匹配节点加淡化 class（区域容器不参与）
   useEffect(() => {

@@ -29,6 +29,7 @@ import {
   attachEdgeSemanticColors,
   refreshEdgeSemanticColors,
 } from '../services/line-style-service';
+import { canvasReadyStore } from '../services/canvas-ready-store';
 import { CustomService, ValidateService } from '../services';
 import { createContextMenuPlugin, createPanelManagerPlugin } from '../plugins';
 import { timestampedFilename } from '../export/download';
@@ -195,18 +196,24 @@ export function useEditorProps(
         areaViewStore.attachDocument(ctx.document);
         ctx.tools.fitView(false);
         // 阅读档下限：流程区横向较长，fitView 会缩到文字不可读；
-        // 缩放低于 0.55 时改用 0.6 并定位到内容区（横向滚动阅读）
+        // 缩放低于 0.55 时改用 0.6，并把入口节点（flow-start / 最左节点）滚到视口中心
         if ((ctx.playground.config.zoom ?? 1) < 0.55) {
+          const configAny = ctx.playground.config as unknown as {
+            updateZoom?: (zoom: number, easing?: boolean) => void;
+          };
+          configAny.updateZoom?.(0.6, false);
           const nodes = ctx.document.getAllNodes();
-          if (nodes.length > 0) {
-            void ctx.playground.scrollToView({
-              entities: nodes,
-              zoom: 0.6,
-              scrollToCenter: false,
-            });
+          const entry =
+            nodes.find((node) => node.flowNodeType === 'flow-start') ??
+            nodes
+              .slice()
+              .sort((a, b) => (a.transform.bounds?.x ?? 0) - (b.transform.bounds?.x ?? 0))[0];
+          if (entry) {
+            void ctx.playground.scrollToView({ entities: [entry], scrollToCenter: true });
           }
         }
         attachEdgeSemanticColors(ctx);
+        canvasReadyStore.bump();
         const match = window.location.hash.match(/^#(?:node-|focus=)(.+)$/);
         if (!match) {
           return;
